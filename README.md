@@ -8,7 +8,7 @@ Lean MVP architecture for a scalable electronics-focused price comparison system
 - `services/scrapers`: store-specific scraping service (Node.js + Playwright)
 - `packages/shared`: shared normalization and slug utilities
 - `infra/supabase`: PostgreSQL schema for Supabase
-- `docs`: architecture and scaling notes
+- `docs`: architecture, deployment, and scaling notes
 
 ## Quick Start
 
@@ -23,11 +23,32 @@ Run scrapers:
 npm run scrape
 ```
 
-Scheduler:
+Run scraper without DB writes (selector smoke test):
 
-- GitHub Actions cron workflow: `.github/workflows/scrape-cron.yml`
-- Shard env-ləri ilə paralel store scraping dəstəklənir.
+```bash
+SCRAPER_DRY_RUN=true SCRAPER_ONLY_STORES=kontakt-home npm run scrape
+```
+
+PowerShell equivalent:
+
+```powershell
+$env:SCRAPER_DRY_RUN='true'
+$env:SCRAPER_ONLY_STORES='kontakt-home'
+npm run scrape
+```
+
+## Scheduler
+
+- Scraper cron workflow: `.github/workflows/scrape-cron.yml`
 - Alerts cron workflow: `.github/workflows/alerts-cron.yml`
+- Store sharding supported with `SCRAPER_SHARD_TOTAL` and `SCRAPER_SHARD_INDEX`
+
+## Active Real Scraper
+
+- `kontakt-home` (`https://kontakt.az`)
+- Category pagination enabled with configurable depth:
+  - `KONTAKT_MAX_PAGES_PER_CATEGORY`
+  - `KONTAKT_CATEGORY_URLS`
 
 ## Core Design Decisions
 
@@ -36,5 +57,5 @@ Scheduler:
 - Current price denormalized in `store_products` for fast listing queries
 - SEO-first slugs for products, categories, and stores
 - Modular scraper contract per store for incremental onboarding
-- Fingerprint-based canonical product matching + slug collision fallback
-- Internal alert runner + Telegram notification queue
+- Fingerprint-based canonical product matching plus slug collision fallback
+- Internal alert runner with Telegram notification queue

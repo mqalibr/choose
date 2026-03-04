@@ -1,8 +1,7 @@
 import type { StoreScraper } from "../core/types";
-import { storeAScraper } from "../stores/storeA";
-import { storeBScraper } from "../stores/storeB";
+import { kontaktHomeScraper } from "../stores/kontaktHome";
 
-const ALL_STORES: StoreScraper[] = [storeAScraper, storeBScraper];
+const ALL_STORES: StoreScraper[] = [kontaktHomeScraper];
 
 function applyExplicitFilter(stores: StoreScraper[]): StoreScraper[] {
   const only = process.env.SCRAPER_ONLY_STORES?.split(",")

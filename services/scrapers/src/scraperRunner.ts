@@ -12,13 +12,27 @@ interface RunnerOptions {
   maxItemsPerStore?: number;
 }
 
+const DEFAULT_SCRAPER_USER_AGENT =
+  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36";
+
+function isDryRun(): boolean {
+  return String(process.env.SCRAPER_DRY_RUN ?? "").toLowerCase() === "true";
+}
+
 async function runStore(store: StoreScraper, browser: Awaited<ReturnType<typeof createBrowser>>, maxItems?: number) {
   const errors: string[] = [];
   const runStartedAt = new Date().toISOString();
   try {
     const pageFactory = async () => {
       const page = await browser.newPage({
-        userAgent: process.env.SCRAPER_USER_AGENT
+        userAgent: process.env.SCRAPER_USER_AGENT ?? DEFAULT_SCRAPER_USER_AGENT,
+        locale: "en-US",
+        timezoneId: "Asia/Baku"
+      });
+      await page.addInitScript(() => {
+        Object.defineProperty(navigator, "webdriver", {
+          get: () => undefined
+        });
       });
       page.setDefaultTimeout(Number(process.env.SCRAPER_TIMEOUT_MS ?? "45000"));
       return page;
@@ -32,9 +46,26 @@ async function runStore(store: StoreScraper, browser: Awaited<ReturnType<typeof 
     });
 
     const normalized = normalizeItems(raw);
-    const { insertedPrices, changedPrices, deactivatedListings } = await upsertNormalizedItems(normalized, {
-      runStartedAt
-    });
+    const dryRun = isDryRun();
+    const { insertedPrices, changedPrices, deactivatedListings } = dryRun
+      ? { insertedPrices: 0, changedPrices: 0, deactivatedListings: 0 }
+      : await upsertNormalizedItems(normalized, {
+          runStartedAt
+        });
+
+    if (dryRun) {
+      logger.info(
+        {
+          store: store.storeSlug,
+          preview: normalized.slice(0, 3).map((item) => ({
+            title: item.canonicalName,
+            priceAzn: item.priceAzn,
+            url: item.productUrl
+          }))
+        },
+        "Dry run active: DB writes skipped"
+      );
+    }
 
     const result: ScrapeResult = {
       storeSlug: store.storeSlug,

@@ -1,7 +1,7 @@
 import { shortHash } from "@azcompare/shared";
 import type { NormalizedItem } from "./types";
 import { logger } from "./logger";
-import { supabase } from "./supabase";
+import { getSupabaseClient } from "./supabase";
 
 interface UpsertStats {
   insertedPrices: number;
@@ -9,11 +9,17 @@ interface UpsertStats {
   deactivatedListings: number;
 }
 
+interface StaleStoreProductRow {
+  id: number;
+  current_price_azn: number | null;
+}
+
 function buildSlugCandidates(baseSlug: string, fingerprint: string): string[] {
   return [baseSlug, `${baseSlug}-${shortHash(fingerprint, 5)}`];
 }
 
 async function resolveProductId(item: NormalizedItem): Promise<number> {
+  const supabase = getSupabaseClient();
   const { data: existingProduct, error: existingError } = await supabase
     .from("products")
     .select("id")
@@ -82,6 +88,7 @@ async function resolveProductId(item: NormalizedItem): Promise<number> {
 }
 
 async function deactivateStaleListings(storeId: number, runStartedAt: string): Promise<number> {
+  const supabase = getSupabaseClient();
   const { data: staleRows, error: staleFetchError } = await supabase
     .from("store_products")
     .select("id,current_price_azn")
@@ -93,7 +100,7 @@ async function deactivateStaleListings(storeId: number, runStartedAt: string): P
     return 0;
   }
 
-  const staleIds = staleRows.map((row) => row.id);
+  const staleIds = (staleRows as StaleStoreProductRow[]).map((row: StaleStoreProductRow) => row.id);
 
   const { error: staleUpdateError } = await supabase
     .from("store_products")
@@ -109,7 +116,7 @@ async function deactivateStaleListings(storeId: number, runStartedAt: string): P
   }
 
   await supabase.from("price_logs").insert(
-    staleRows.map((row) => ({
+    (staleRows as StaleStoreProductRow[]).map((row: StaleStoreProductRow) => ({
       store_product_id: row.id,
       event_type: "listing_inactive",
       old_price_azn: row.current_price_azn ?? null,
@@ -125,6 +132,7 @@ export async function upsertNormalizedItems(
   items: NormalizedItem[],
   options: { runStartedAt: string }
 ): Promise<UpsertStats> {
+  const supabase = getSupabaseClient();
   if (!items.length) {
     return { insertedPrices: 0, changedPrices: 0, deactivatedListings: 0 };
   }
