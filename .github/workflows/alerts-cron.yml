@@ -1,0 +1,26 @@
+name: Run Alerts
+
+on:
+  schedule:
+    - cron: "*/30 * * * *"
+  workflow_dispatch:
+
+jobs:
+  run-alerts:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger internal alerts endpoint
+        env:
+          INTERNAL_ALERTS_ENDPOINT: ${{ secrets.INTERNAL_ALERTS_ENDPOINT }}
+          INTERNAL_API_KEY: ${{ secrets.INTERNAL_API_KEY }}
+        run: |
+          if [ -z "$INTERNAL_ALERTS_ENDPOINT" ] || [ -z "$INTERNAL_API_KEY" ]; then
+            echo "Missing INTERNAL_ALERTS_ENDPOINT or INTERNAL_API_KEY secrets"
+            exit 1
+          fi
+
+          curl --fail --silent --show-error \
+            -X POST "$INTERNAL_ALERTS_ENDPOINT" \
+            -H "Content-Type: application/json" \
+            -H "x-internal-key: $INTERNAL_API_KEY" \
+            --data '{"limit":120,"dryRun":false}'

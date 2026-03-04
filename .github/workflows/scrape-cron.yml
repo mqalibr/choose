@@ -1,0 +1,40 @@
+name: Scrape Stores
+
+on:
+  schedule:
+    - cron: "0 */2 * * *"
+  workflow_dispatch:
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        shard_index: [0, 1]
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      SCRAPER_USER_AGENT: "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36"
+      SCRAPER_MAX_CONCURRENCY: "2"
+      SCRAPER_SHARD_TOTAL: "2"
+      SCRAPER_SHARD_INDEX: ${{ matrix.shard_index }}
+      LOG_LEVEL: "info"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: "npm"
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Install Playwright Chromium
+        run: npx playwright install chromium --with-deps
+
+      - name: Run Scrapers
+        run: npm run scrape

@@ -1,0 +1,16 @@
+{
+  "name": "az-electro-compare",
+  "private": true,
+  "version": "0.1.0",
+  "workspaces": [
+    "apps/*",
+    "services/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "npm --workspace apps/web run dev",
+    "build": "npm --workspace apps/web run build",
+    "start": "npm --workspace apps/web run start",
+    "scrape": "npm --workspace services/scrapers run scrape"
+  }
+}
