@@ -26,14 +26,14 @@ npm run scrape
 Run scraper without DB writes (selector smoke test):
 
 ```bash
-SCRAPER_DRY_RUN=true SCRAPER_ONLY_STORES=kontakt-home npm run scrape
+SCRAPER_DRY_RUN=true SCRAPER_ONLY_STORES=kontakt-home,irshad npm run scrape
 ```
 
 PowerShell equivalent:
 
 ```powershell
 $env:SCRAPER_DRY_RUN='true'
-$env:SCRAPER_ONLY_STORES='kontakt-home'
+$env:SCRAPER_ONLY_STORES='kontakt-home,irshad'
 npm run scrape
 ```
 
@@ -46,9 +46,12 @@ npm run scrape
 ## Active Real Scraper
 
 - `kontakt-home` (`https://kontakt.az`)
+- `irshad` (`https://irshad.az`)
 - Category pagination enabled with configurable depth:
   - `KONTAKT_MAX_PAGES_PER_CATEGORY`
   - `KONTAKT_CATEGORY_URLS`
+  - `IRSHAD_MAX_PAGES_PER_CATEGORY`
+  - `IRSHAD_CATEGORY_URLS`
 
 ## Core Design Decisions
 

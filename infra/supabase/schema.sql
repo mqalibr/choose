@@ -271,22 +271,32 @@ create index if not exists product_aliases_product_idx
 
 -- API-focused views
 create or replace view public.v_product_offers as
+with ranked as (
+  select
+    sp.*,
+    row_number() over (
+      partition by sp.store_id, sp.product_id
+      order by sp.last_seen_at desc nulls last, sp.price_updated_at desc nulls last, sp.id desc
+    ) as rn
+  from public.store_products sp
+  where sp.is_active = true
+    and sp.current_price_azn is not null
+)
 select
-  sp.id as store_product_id,
+  r.id as store_product_id,
   s.id as store_id,
   s.name as store_name,
   s.slug as store_slug,
   p.id as product_id,
-  sp.current_price_azn,
-  sp.previous_price_azn,
-  sp.product_url,
-  sp.in_stock,
-  sp.price_updated_at
-from public.store_products sp
-join public.stores s on s.id = sp.store_id and s.is_active = true
-join public.products p on p.id = sp.product_id and p.is_active = true
-where sp.is_active = true
-  and sp.current_price_azn is not null;
+  r.current_price_azn,
+  r.previous_price_azn,
+  r.product_url,
+  r.in_stock,
+  r.price_updated_at
+from ranked r
+join public.stores s on s.id = r.store_id and s.is_active = true
+join public.products p on p.id = r.product_id and p.is_active = true
+where r.rn = 1;
 
 create or replace view public.v_product_search as
 select
@@ -297,19 +307,13 @@ select
   p.brand,
   p.last_price_at,
   p.normalized_name as search_text,
-  min(sp.current_price_azn) filter (
-    where sp.current_price_azn is not null
-      and sp.is_active = true
-      and s.is_active = true
-      and sp.in_stock = true
+  min(o.current_price_azn) filter (
+    where o.current_price_azn is not null
+      and o.in_stock = true
   ) as min_price_azn,
-  count(*) filter (
-    where sp.is_active = true
-      and s.is_active = true
-  ) as offer_count
+  count(*) as offer_count
 from public.products p
-left join public.store_products sp on sp.product_id = p.id
-left join public.stores s on s.id = sp.store_id
+join public.v_product_offers o on o.product_id = p.id
 where p.is_active = true
 group by p.id, p.slug, p.canonical_name, p.image_url, p.brand, p.last_price_at, p.normalized_name;
 
@@ -330,19 +334,16 @@ join public.products p on p.id = v.id;
 
 create or replace view public.v_store_products as
 select
-  s.slug as store_slug,
-  s.name as store_name,
+  o.store_slug,
+  o.store_name,
   p.slug,
   p.canonical_name,
   p.image_url,
-  sp.current_price_azn as min_price_azn,
-  sp.price_updated_at
-from public.store_products sp
-join public.stores s on s.id = sp.store_id
-join public.products p on p.id = sp.product_id
-where sp.is_active = true
-  and s.is_active = true
-  and p.is_active = true;
+  o.current_price_azn as min_price_azn,
+  o.price_updated_at
+from public.v_product_offers o
+join public.products p on p.id = o.product_id
+where p.is_active = true;
 
 create or replace view public.v_active_price_alert_candidates as
 select

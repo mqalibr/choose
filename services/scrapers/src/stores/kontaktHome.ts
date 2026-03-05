@@ -35,6 +35,15 @@ function isChallengePage(title: string): boolean {
   return /just a moment/i.test(title);
 }
 
+function inferCategorySlug(url: string): string | null {
+  const value = url.toLowerCase();
+  if (value.includes("smartfon") || value.includes("telefoniya")) return "telefonlar";
+  if (value.includes("notbuk")) return "noutbuklar";
+  if (value.includes("televizor") || value.includes("/tv-")) return "televizorlar";
+  if (value.includes("planset") || value.includes("tablet")) return "plansetler";
+  return null;
+}
+
 async function loadAndValidateCategoryPage(page: any, url: string, challengeRetries: number) {
   await withRetry(
     async () => {
@@ -67,10 +76,10 @@ async function loadAndValidateCategoryPage(page: any, url: string, challengeRetr
   }
 }
 
-async function extractPageItems(page: any, scrapedAt: string): Promise<RawStoreItem[]> {
+async function extractPageItems(page: any, scrapedAt: string, categorySlug: string | null): Promise<RawStoreItem[]> {
   return page.$$eval(
     ".prodItem.product-item",
-    (nodes: Element[], scrapedAtIso: string) =>
+    (nodes: Element[], payload: { scrapedAtIso: string; categorySlug: string | null }) =>
       nodes
         .map((node: Element, idx: number) => {
           const el = node as HTMLElement;
@@ -124,10 +133,11 @@ async function extractPageItems(page: any, scrapedAt: string): Promise<RawStoreI
             titleRaw: titleText,
             productUrl: href,
             imageUrl,
+            categorySlug: payload.categorySlug,
             priceRaw,
             availabilityRaw: addBtnText || null,
             storeSku: sku || null,
-            scrapedAt: scrapedAtIso,
+            scrapedAt: payload.scrapedAtIso,
             inStock: !addBtnDisabled && !outOfStock
           } as RawStoreItem & { inStock: boolean };
         })
@@ -138,7 +148,7 @@ async function extractPageItems(page: any, scrapedAt: string): Promise<RawStoreI
           ...item,
           availabilityRaw: item.inStock ? "in_stock" : "out_of_stock"
         })),
-    scrapedAt
+    { scrapedAtIso: scrapedAt, categorySlug }
   );
 }
 
@@ -160,6 +170,7 @@ export const kontaktHomeScraper: StoreScraper = {
       });
 
       try {
+        const categorySlug = inferCategorySlug(categoryUrl);
         let currentUrl: string | null = categoryUrl;
         let pageNo = 1;
         const seenPages = new Set<string>();
@@ -170,7 +181,7 @@ export const kontaktHomeScraper: StoreScraper = {
 
           await loadAndValidateCategoryPage(page, currentUrl, challengeRetries);
 
-          const pageItems = await extractPageItems(page, new Date().toISOString());
+          const pageItems = await extractPageItems(page, new Date().toISOString(), categorySlug);
           if (!pageItems.length) {
             throw new Error(`No parsable products on Kontakt page: ${currentUrl}`);
           }

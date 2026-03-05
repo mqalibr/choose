@@ -39,7 +39,7 @@ export function normalizeItems(rawItems: RawStoreItem[]): NormalizedItem[] {
         productSlug: slugify(normalizedTitle),
         productUrl: raw.productUrl,
         imageUrl: raw.imageUrl ?? null,
-        categorySlug: null,
+        categorySlug: raw.categorySlug ?? null,
         priceAzn: parsePriceAzn(raw.priceRaw),
         inStock: inferInStock(raw.availabilityRaw),
         scrapedAt: raw.scrapedAt

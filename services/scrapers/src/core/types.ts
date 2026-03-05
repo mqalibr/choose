@@ -6,6 +6,7 @@ export interface RawStoreItem {
   titleRaw: string;
   productUrl: string;
   imageUrl?: string | null;
+  categorySlug?: string | null;
   priceRaw: string;
   availabilityRaw?: string | null;
   storeSku?: string | null;

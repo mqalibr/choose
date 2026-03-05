@@ -18,11 +18,11 @@ function buildSlugCandidates(baseSlug: string, fingerprint: string): string[] {
   return [baseSlug, `${baseSlug}-${shortHash(fingerprint, 5)}`];
 }
 
-async function resolveProductId(item: NormalizedItem): Promise<number> {
+async function resolveProductId(item: NormalizedItem, categoryId: number | null): Promise<number> {
   const supabase = getSupabaseClient();
   const { data: existingProduct, error: existingError } = await supabase
     .from("products")
-    .select("id")
+    .select("id,category_id")
     .eq("fingerprint", item.fingerprint)
     .maybeSingle();
 
@@ -38,7 +38,8 @@ async function resolveProductId(item: NormalizedItem): Promise<number> {
         normalized_name: item.normalizedTitle,
         brand: item.brand ?? null,
         model: item.model ?? null,
-        image_url: item.imageUrl ?? null
+        image_url: item.imageUrl ?? null,
+        category_id: existingProduct.category_id ?? categoryId
       })
       .eq("id", existingProduct.id);
     return existingProduct.id;
@@ -57,7 +58,8 @@ async function resolveProductId(item: NormalizedItem): Promise<number> {
         normalized_name: item.normalizedTitle,
         brand: item.brand ?? null,
         model: item.model ?? null,
-        image_url: item.imageUrl ?? null
+        image_url: item.imageUrl ?? null,
+        category_id: categoryId
       })
       .select("id")
       .single();
@@ -144,8 +146,29 @@ export async function upsertNormalizedItems(
     .eq("slug", storeSlug)
     .maybeSingle();
 
-  if (storeError || !store) {
+  if (storeError) {
+    throw new Error(`Store lookup failed for slug=${storeSlug}: ${storeError.message}`);
+  }
+
+  if (!store) {
     throw new Error(`Store not found for slug=${storeSlug}`);
+  }
+
+  const categorySlugList = [...new Set(items.map((item) => item.categorySlug).filter(Boolean))] as string[];
+  const categoryBySlug = new Map<string, number>();
+  if (categorySlugList.length) {
+    const { data: categories, error: categoryError } = await supabase
+      .from("categories")
+      .select("id,slug")
+      .in("slug", categorySlugList);
+
+    if (categoryError) {
+      logger.warn({ error: categoryError }, "Category preload failed");
+    } else {
+      for (const row of categories ?? []) {
+        categoryBySlug.set(row.slug, row.id);
+      }
+    }
   }
 
   let insertedPrices = 0;
@@ -153,9 +176,10 @@ export async function upsertNormalizedItems(
   let deactivatedListings = 0;
 
   for (const item of items) {
+    const categoryId = item.categorySlug ? (categoryBySlug.get(item.categorySlug) ?? null) : null;
     let productId: number;
     try {
-      productId = await resolveProductId(item);
+      productId = await resolveProductId(item, categoryId);
     } catch (productError) {
       logger.error({ error: productError, item }, "Failed to resolve product");
       continue;

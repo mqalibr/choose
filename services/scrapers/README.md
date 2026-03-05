@@ -19,6 +19,7 @@ services/scrapers
       index.ts
     stores/
       kontaktHome.ts
+      irshad.ts
       _template.ts
       storeA.ts
       storeB.ts
@@ -28,7 +29,7 @@ services/scrapers
 
 ## Active Store Registry
 
-- Current active store in `src/config/stores.ts`: `kontakt-home`
+- Current active stores in `src/config/stores.ts`: `kontakt-home`, `irshad`
 - Demo files `storeA.ts` and `storeB.ts` are kept only as references.
 
 ## Scheduler Options
@@ -52,6 +53,8 @@ services/scrapers
 - `KONTAKT_MAX_PAGES_PER_CATEGORY=2` : page depth per category
 - `KONTAKT_CATEGORY_URLS=` : optional comma-separated custom category URLs
 - `KONTAKT_CHALLENGE_RETRIES=2` : retries when Cloudflare challenge appears
+- `IRSHAD_MAX_PAGES_PER_CATEGORY=3` : max "load more" pages per category
+- `IRSHAD_CATEGORY_URLS=` : optional comma-separated custom category URLs
 
 ## Kontakt Scraper Notes
 
@@ -59,6 +62,13 @@ services/scrapers
 - Reads product metadata from `data-gtm`
 - Uses `a.action.next` for pagination
 - Retries failed page loads and throws on Cloudflare challenge pages
+
+## Irshad Scraper Notes
+
+- Uses `.products .product` cards
+- Reads title/url from `a.product__name.product-link`
+- Prefers `p.new-price` for current price
+- Uses `#loadMore` button (AJAX) for pagination
 
 ## New Store Onboarding Checklist
 

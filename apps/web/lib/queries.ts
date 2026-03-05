@@ -23,6 +23,35 @@ const STORE_SORT: Record<SearchSort, { column: string; asc: boolean }> = {
   updated_desc: { column: "price_updated_at", asc: false }
 };
 
+function dedupeOffersByStore(offers: ProductOffer[]): ProductOffer[] {
+  const byStore = new Map<number, ProductOffer>();
+
+  for (const offer of offers) {
+    const existing = byStore.get(offer.store_id);
+    if (!existing) {
+      byStore.set(offer.store_id, offer);
+      continue;
+    }
+
+    const existingPrice = Number(existing.current_price_azn);
+    const nextPrice = Number(offer.current_price_azn);
+    if (nextPrice < existingPrice) {
+      byStore.set(offer.store_id, offer);
+      continue;
+    }
+
+    if (nextPrice === existingPrice) {
+      const existingTs = new Date(existing.price_updated_at).getTime();
+      const nextTs = new Date(offer.price_updated_at).getTime();
+      if (nextTs > existingTs) {
+        byStore.set(offer.store_id, offer);
+      }
+    }
+  }
+
+  return [...byStore.values()].sort((a, b) => Number(a.current_price_azn) - Number(b.current_price_azn));
+}
+
 function clampPageSize(limit?: number): number {
   if (!limit) return DEFAULT_PAGE_SIZE;
   return Math.max(1, Math.min(limit, MAX_PAGE_SIZE));
@@ -45,6 +74,7 @@ export async function searchProducts(input: {
   let query = supabase
     .from("v_product_search")
     .select("*", { count: "exact" })
+    .gt("offer_count", 0)
     .range(from, to)
     .order(sortConfig.column, { ascending: sortConfig.asc });
 
@@ -82,11 +112,12 @@ export async function getProductBySlug(slug: string) {
     .returns<ProductOffer[]>();
 
   if (offerError) throw offerError;
+  const dedupedOffers = dedupeOffersByStore(offers ?? []);
 
   return {
     product: product as ProductRow,
-    offers: offers ?? [],
-    lowestPrice: offers?.[0]?.current_price_azn ?? null,
+    offers: dedupedOffers,
+    lowestPrice: dedupedOffers[0]?.current_price_azn ?? null,
     lastUpdatedAt: product.last_price_at
   };
 }
@@ -118,6 +149,7 @@ export async function getCategoryBySlug(input: {
     .from("v_category_products")
     .select("*", { count: "exact" })
     .eq("category_id", category.id)
+    .gt("offer_count", 0)
     .range(from, to)
     .order(sortConfig.column, { ascending: sortConfig.asc })
     .returns<SearchProduct[]>();
