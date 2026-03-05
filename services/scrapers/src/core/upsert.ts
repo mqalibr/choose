@@ -14,6 +14,15 @@ interface StaleStoreProductRow {
   current_price_azn: number | null;
 }
 
+interface ExistingMappingRow {
+  id: number;
+  product_id: number;
+  current_price_azn: number | null;
+  previous_price_azn: number | null;
+  in_stock: boolean;
+  price_updated_at: string | null;
+}
+
 function buildSlugCandidates(baseSlug: string, fingerprint: string): string[] {
   return [baseSlug, `${baseSlug}-${shortHash(fingerprint, 5)}`];
 }
@@ -177,25 +186,43 @@ export async function upsertNormalizedItems(
 
   for (const item of items) {
     const categoryId = item.categorySlug ? (categoryBySlug.get(item.categorySlug) ?? null) : null;
-    let productId: number;
-    try {
-      productId = await resolveProductId(item, categoryId);
-    } catch (productError) {
-      logger.error({ error: productError, item }, "Failed to resolve product");
-      continue;
-    }
-
     const { data: existingMapping } = await supabase
       .from("store_products")
-      .select("id,current_price_azn,previous_price_azn,in_stock,price_updated_at")
+      .select("id,product_id,current_price_azn,previous_price_azn,in_stock,price_updated_at")
       .eq("store_id", store.id)
       .eq("listing_key", item.listingKey)
       .maybeSingle();
 
+    let productId: number;
+    if ((existingMapping as ExistingMappingRow | null)?.product_id) {
+      productId = (existingMapping as ExistingMappingRow).product_id;
+
+      const patch: Record<string, unknown> = {
+        canonical_name: item.canonicalName,
+        normalized_name: item.normalizedTitle,
+        brand: item.brand ?? null,
+        model: item.model ?? null,
+        image_url: item.imageUrl ?? null
+      };
+      if (categoryId !== null) {
+        patch.category_id = categoryId;
+      }
+
+      await supabase.from("products").update(patch).eq("id", productId);
+    } else {
+      try {
+        productId = await resolveProductId(item, categoryId);
+      } catch (productError) {
+        logger.error({ error: productError, item }, "Failed to resolve product");
+        continue;
+      }
+    }
+
     const isNew = !existingMapping;
-    const priceChanged = !isNew && Number(existingMapping.current_price_azn) !== Number(item.priceAzn);
-    const prevPrice = priceChanged ? existingMapping.current_price_azn : existingMapping?.previous_price_azn ?? null;
-    const updatedAt = isNew || priceChanged ? item.scrapedAt : existingMapping?.price_updated_at ?? null;
+    const mapping = existingMapping as ExistingMappingRow | null;
+    const priceChanged = !isNew && Number(mapping?.current_price_azn) !== Number(item.priceAzn);
+    const prevPrice = priceChanged ? mapping?.current_price_azn ?? null : mapping?.previous_price_azn ?? null;
+    const updatedAt = isNew || priceChanged ? item.scrapedAt : mapping?.price_updated_at ?? null;
 
     const { data: storeProduct, error: mappingError } = await supabase
       .from("store_products")
@@ -245,7 +272,7 @@ export async function upsertNormalizedItems(
       await supabase.from("price_logs").insert({
         store_product_id: storeProduct.id,
         event_type: isNew ? "new_listing" : "price_changed",
-        old_price_azn: isNew ? null : existingMapping.current_price_azn,
+        old_price_azn: isNew ? null : mapping?.current_price_azn ?? null,
         new_price_azn: item.priceAzn,
         payload: { inStock: item.inStock, scrapedAt: item.scrapedAt }
       });

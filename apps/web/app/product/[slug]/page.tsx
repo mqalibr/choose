@@ -15,15 +15,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const data = await getProductBySlug(slug);
   if (!data) {
     return buildMetadata({
-      title: "Məhsul tapılmadı",
-      description: "Axtardığınız məhsul mövcud deyil.",
+      title: "Mehsul tapilmadi",
+      description: "Axtardiginiz mehsul movcud deyil.",
       path: `/product/${slug}`
     });
   }
 
   return buildMetadata({
     title: data.product.canonical_name,
-    description: `${data.offers.length} mağazada qiymət müqayisəsi`,
+    description: `${data.offers.length} magazada qiymet muqayisesi`,
     path: `/product/${slug}`
   });
 }
@@ -35,7 +35,7 @@ export default async function ProductPage({ params }: Props) {
 
   const jsonLd = buildProductJsonLd({
     name: data.product.canonical_name,
-    description: `${data.offers.length} mağazada qiymət müqayisəsi`,
+    description: `${data.offers.length} magazada qiymet muqayisesi`,
     url: `${process.env.NEXT_PUBLIC_SITE_URL ?? "https://example.com"}/product/${slug}`,
     image: data.product.image_url,
     lowPrice: data.lowestPrice,
@@ -48,20 +48,30 @@ export default async function ProductPage({ params }: Props) {
         {JSON.stringify(jsonLd)}
       </Script>
 
+      {data.product.image_url ? (
+        <img
+          src={data.product.image_url}
+          alt={data.product.canonical_name}
+          className="product-hero-image"
+          loading="eager"
+          decoding="async"
+        />
+      ) : null}
+
       <h2 style={{ marginBottom: 8 }}>{data.product.canonical_name}</h2>
-      <p className="muted">Son yenilənmə: {data.lastUpdatedAt ?? "-"}</p>
+      <p className="muted">Son yenilenme: {data.lastUpdatedAt ?? "-"}</p>
       <p>
-        Ən ucuz qiymət: <strong>{data.lowestPrice ?? "-"} AZN</strong>
+        En ucuz qiymet: <strong>{data.lowestPrice ?? "-"} AZN</strong>
       </p>
 
       <div className="grid">
         {data.offers.map((offer) => (
           <article key={offer.store_product_id} className="card">
             <strong>{offer.store_name}</strong>
-            <p>Qiymət: {offer.current_price_azn} AZN</p>
-            <p className="muted">Yenilənib: {offer.price_updated_at}</p>
+            <p>Qiymet: {offer.current_price_azn} AZN</p>
+            <p className="muted">Yenilenib: {offer.price_updated_at}</p>
             <a href={offer.product_url} target="_blank" rel="noreferrer">
-              Mağazaya keç
+              Magazaya kec
             </a>
           </article>
         ))}

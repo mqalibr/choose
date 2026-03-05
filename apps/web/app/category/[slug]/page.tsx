@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { Pagination } from "../../../components/Pagination";
 import { getCategoryBySlug } from "../../../lib/queries";
 import { buildMetadata } from "../../../lib/seo";
 import type { SearchSort } from "../../../lib/types";
@@ -17,15 +18,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const data = await getCategoryBySlug({ slug, page: 1, limit: 1 });
   if (!data) {
     return buildMetadata({
-      title: "Kateqoriya tapılmadı",
-      description: "Axtardığınız kateqoriya mövcud deyil.",
+      title: "Kateqoriya tapilmadi",
+      description: "Axtardiginiz kateqoriya movcud deyil.",
       path: `/category/${slug}`
     });
   }
 
   return buildMetadata({
-    title: `${data.category.name} qiymət müqayisəsi`,
-    description: `${data.category.name} üzrə mağazalararası ən ucuz qiymətlər`,
+    title: `${data.category.name} qiymet muqayisesi`,
+    description: `${data.category.name} uzre magazalararasi en ucuz qiymetler`,
     path: `/category/${slug}`
   });
 }
@@ -41,19 +42,38 @@ export default async function CategoryPage({ params, searchParams }: Props) {
   return (
     <section>
       <h2>{data.category.name}</h2>
-      <p className="muted">Məhsul sayı: {data.total}</p>
+      <p className="muted">Mehsul sayi: {data.total}</p>
 
       <div className="grid">
         {data.items.map((item) => (
           <Link key={item.slug} href={`/product/${item.slug}`} className="card">
+            {item.image_url ? (
+              <img
+                src={item.image_url}
+                alt={item.canonical_name}
+                className="card-image"
+                loading="lazy"
+                decoding="async"
+              />
+            ) : (
+              <div className="card-image card-image-empty">Sekil yoxdur</div>
+            )}
             <strong>{item.canonical_name}</strong>
-            <p className="muted">Ən ucuz: {item.min_price_azn ?? "-"} AZN</p>
+            <p className="muted">En ucuz: {item.min_price_azn ?? "-"} AZN</p>
             <p className="muted" style={{ marginBottom: 0 }}>
-              Mağaza sayı: {item.offer_count}
+              Magaza sayi: {item.offer_count}
             </p>
           </Link>
         ))}
       </div>
+
+      <Pagination
+        basePath={`/category/${slug}`}
+        page={data.page}
+        total={data.total}
+        limit={data.limit}
+        query={{ sort }}
+      />
     </section>
   );
 }
