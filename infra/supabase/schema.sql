@@ -61,6 +61,47 @@ create table if not exists public.products (
   constraint products_slug_format_chk check (slug ~ '^[a-z0-9]+(?:-[a-z0-9]+)*$')
 );
 
+create table if not exists public.phone_specs (
+  product_id bigint primary key references public.products(id) on delete cascade,
+  battery_mah integer check (battery_mah is null or battery_mah > 0),
+  has_nfc boolean,
+  ram_gb smallint check (ram_gb is null or ram_gb > 0),
+  storage_gb integer check (storage_gb is null or storage_gb > 0),
+  chipset_vendor text,
+  chipset_model text,
+  cpu_cores smallint check (cpu_cores is null or cpu_cores between 1 and 24),
+  gpu_model text,
+  chipset text,
+  os_name text,
+  os_version text,
+  sim_count smallint check (sim_count is null or sim_count between 1 and 4),
+  has_esim boolean,
+  has_5g boolean,
+  has_wifi_6 boolean,
+  bluetooth_version text,
+  main_camera_mp numeric(5,1) check (main_camera_mp is null or main_camera_mp > 0),
+  ultrawide_camera_mp numeric(5,1) check (ultrawide_camera_mp is null or ultrawide_camera_mp > 0),
+  telephoto_camera_mp numeric(5,1) check (telephoto_camera_mp is null or telephoto_camera_mp > 0),
+  selfie_camera_mp numeric(5,1) check (selfie_camera_mp is null or selfie_camera_mp > 0),
+  has_ois boolean,
+  has_wireless_charge boolean,
+  wired_charge_w numeric(6,2) check (wired_charge_w is null or wired_charge_w > 0),
+  wireless_charge_w numeric(6,2) check (wireless_charge_w is null or wireless_charge_w > 0),
+  screen_size_in numeric(4,2) check (screen_size_in is null or screen_size_in > 0),
+  refresh_rate_hz smallint check (refresh_rate_hz is null or refresh_rate_hz between 30 and 240),
+  panel_type text,
+  resolution_width integer check (resolution_width is null or resolution_width > 0),
+  resolution_height integer check (resolution_height is null or resolution_height > 0),
+  weight_g numeric(6,2) check (weight_g is null or weight_g > 0),
+  ip_rating text,
+  release_year smallint check (release_year is null or release_year between 2000 and 2100),
+  raw_specs jsonb not null default '{}'::jsonb,
+  specs_confidence numeric(4,3) not null default 0.500 check (specs_confidence >= 0 and specs_confidence <= 1),
+  last_parsed_at timestamptz,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
 create unique index if not exists products_fingerprint_uidx
   on public.products (fingerprint)
   where fingerprint is not null;
@@ -193,6 +234,11 @@ create trigger trg_products_updated_at
 before update on public.products
 for each row execute function public.set_updated_at();
 
+drop trigger if exists trg_phone_specs_updated_at on public.phone_specs;
+create trigger trg_phone_specs_updated_at
+before update on public.phone_specs
+for each row execute function public.set_updated_at();
+
 drop trigger if exists trg_store_products_updated_at on public.store_products;
 create trigger trg_store_products_updated_at
 before update on public.store_products
@@ -233,8 +279,39 @@ create index if not exists categories_path_idx on public.categories (path);
 
 create index if not exists products_category_idx on public.products (category_id);
 create index if not exists products_last_price_idx on public.products (last_price_at desc);
+create index if not exists products_brand_lower_idx
+  on public.products ((lower(brand)))
+  where brand is not null and btrim(brand) <> '';
 create index if not exists products_normalized_trgm_idx
   on public.products using gin (normalized_name gin_trgm_ops);
+
+create index if not exists phone_specs_ram_idx on public.phone_specs (ram_gb);
+create index if not exists phone_specs_storage_idx on public.phone_specs (storage_gb);
+create index if not exists phone_specs_battery_idx on public.phone_specs (battery_mah);
+create index if not exists phone_specs_nfc_idx on public.phone_specs (has_nfc);
+create index if not exists phone_specs_wireless_charge_idx on public.phone_specs (has_wireless_charge);
+create index if not exists phone_specs_screen_size_idx on public.phone_specs (screen_size_in);
+create index if not exists phone_specs_os_idx on public.phone_specs (os_name);
+create index if not exists phone_specs_chipset_idx
+  on public.phone_specs using gin (chipset gin_trgm_ops);
+create index if not exists phone_specs_chipset_vendor_idx on public.phone_specs (chipset_vendor);
+create index if not exists phone_specs_cpu_cores_idx on public.phone_specs (cpu_cores);
+create index if not exists phone_specs_gpu_model_idx on public.phone_specs (gpu_model);
+create index if not exists phone_specs_os_version_idx on public.phone_specs (os_version);
+create index if not exists phone_specs_has_5g_idx on public.phone_specs (has_5g);
+create index if not exists phone_specs_has_esim_idx on public.phone_specs (has_esim);
+create index if not exists phone_specs_sim_count_idx on public.phone_specs (sim_count);
+create index if not exists phone_specs_refresh_rate_idx on public.phone_specs (refresh_rate_hz);
+create index if not exists phone_specs_panel_type_idx on public.phone_specs (panel_type);
+create index if not exists phone_specs_release_year_idx on public.phone_specs (release_year);
+create index if not exists phone_specs_main_camera_idx on public.phone_specs (main_camera_mp);
+create index if not exists phone_specs_selfie_camera_idx on public.phone_specs (selfie_camera_mp);
+create index if not exists phone_specs_weight_idx on public.phone_specs (weight_g);
+create index if not exists phone_specs_os_name_lower_idx on public.phone_specs (lower(os_name));
+create index if not exists phone_specs_chipset_model_trgm_idx
+  on public.phone_specs using gin (chipset_model gin_trgm_ops);
+create index if not exists phone_specs_raw_specs_gin_idx
+  on public.phone_specs using gin (raw_specs jsonb_path_ops);
 
 create index if not exists store_products_product_price_idx
   on public.store_products (product_id, in_stock, current_price_azn);
@@ -311,7 +388,8 @@ select
     where o.current_price_azn is not null
       and o.in_stock = true
   ) as min_price_azn,
-  count(*) as offer_count
+  count(*) as offer_count,
+  nullif(trim(both '-' from regexp_replace(lower(coalesce(p.brand, '')), '[^a-z0-9]+', '-', 'g')), '') as brand_slug
 from public.products p
 join public.v_product_offers o on o.product_id = p.id
 where p.is_active = true
@@ -328,9 +406,40 @@ select
   v.search_text,
   v.min_price_azn,
   v.offer_count,
-  p.category_id
+  p.category_id,
+  v.brand_slug
 from public.v_product_search v
 join public.products p on p.id = v.id;
+
+create or replace view public.v_category_brand_facets as
+select
+  v.category_id,
+  v.brand,
+  v.brand_slug,
+  count(*)::bigint as product_count
+from public.v_category_products v
+where v.brand_slug is not null
+group by v.category_id, v.brand, v.brand_slug;
+
+create or replace view public.v_category_store_products as
+select distinct
+  p.category_id,
+  o.product_id,
+  o.store_slug,
+  o.store_name
+from public.v_product_offers o
+join public.products p on p.id = o.product_id
+where p.is_active = true
+  and p.category_id is not null;
+
+create or replace view public.v_category_store_facets as
+select
+  v.category_id,
+  v.store_slug,
+  v.store_name,
+  count(distinct v.product_id)::bigint as product_count
+from public.v_category_store_products v
+group by v.category_id, v.store_slug, v.store_name;
 
 create or replace view public.v_store_products as
 select

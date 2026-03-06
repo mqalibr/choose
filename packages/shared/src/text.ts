@@ -1,9 +1,9 @@
-const TOKEN_NOISE = new Set([
+﻿const TOKEN_NOISE = new Set([
   "new",
   "original",
   "official",
   "qara",
-  "ağ",
+  "ag",
   "blue",
   "black",
   "white"

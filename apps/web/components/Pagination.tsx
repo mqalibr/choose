@@ -1,4 +1,4 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 
 interface PaginationProps {
   basePath: string;
@@ -69,7 +69,7 @@ export function Pagination({ basePath, page, total, limit, query = {} }: Paginat
   const pages = buildPageList(current, totalPages);
 
   return (
-    <nav className="pagination" aria-label="Pagination">
+    <nav className="pagination" aria-label="Səhifələmə">
       {current > 1 ? (
         <Link className="pagination-link" href={buildPageHref(basePath, current - 1, query)}>
           Geri
@@ -109,10 +109,10 @@ export function Pagination({ basePath, page, total, limit, query = {} }: Paginat
 
       {current < totalPages ? (
         <Link className="pagination-link" href={buildPageHref(basePath, current + 1, query)}>
-          Ireli
+          İrəli
         </Link>
       ) : (
-        <span className="pagination-link is-disabled">Ireli</span>
+        <span className="pagination-link is-disabled">İrəli</span>
       )}
     </nav>
   );

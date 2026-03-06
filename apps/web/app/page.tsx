@@ -1,11 +1,11 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 import { buildMetadata } from "../lib/seo";
 import { getSupabaseServerClient } from "../lib/supabase";
 
 export const revalidate = 300;
 
 export const metadata = buildMetadata({
-  title: "Ana Səhifə",
+  title: "Ana səhifə",
   description: "Elektronika məhsullarında ən ucuz qiymətləri müqayisə edin.",
   path: "/"
 });
@@ -27,7 +27,7 @@ export default async function HomePage() {
         <Link href="/search">Axtarış səhifəsinə keç</Link>
       </div>
 
-      <h3>Populyar Kateqoriyalar</h3>
+      <h3>Populyar kateqoriyalar</h3>
       <div className="grid">
         {(categories ?? []).map((category) => (
           <Link key={category.slug} href={`/category/${category.slug}`} className="card">

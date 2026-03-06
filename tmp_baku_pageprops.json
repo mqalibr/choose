@@ -1,0 +1,122 @@
+{
+  "homeTopSlider": [
+    {
+      "button_url": "https://www.bakuelectronics.az/kampaniyalar/diqqet-qirmizidadir",
+      "image": "https://media.bakuelectronics.az/media/page/slider/red923.webp"
+    },
+    {
+      "button_url": "https://www.bakuelectronics.az/kampaniyalar/red-kampanya-home",
+      "image": "https://media.bakuelectronics.az/media/page/slider/923X520-ss-red.webp"
+    },
+    {
+      "button_url": "https://www.bakuelectronics.az/kampaniyalar/motoverse-red-kampaniya",
+      "image": "https://media.bakuelectronics.az/media/page/slider/Motoverse-veb-sayt.webp"
+    },
+    {
+      "button_url": "https://www.bakuelectronics.az/kampaniyalar/diqqet-qirmizida-olsun",
+      "image": "https://media.bakuelectronics.az/media/page/slider/923-x-520-mebellər_2.webp"
+    },
+    {
+      "button_url": "https://www.bakuelectronics.az/kampaniyalar/baku-electronics-ramazan-kampaniyasi",
+      "image": "https://media.bakuelectronics.az/media/page/slider/ramazan_ayı_923x520.webp"
+    },
+    {
+      "button_url": "https://www.bakuelectronics.az/axtaris-neticesi?name=Smartfon+Samsung+Galaxy+S26",
+      "image": "https://media.bakuelectronics.az/media/page/slider/Galaxy-S26-923-x-520.webp"
+    },
+    {
+      "button_url": "https://www.bakuelectronics.az/xeberler/iphone17e-serfeli-furset",
+      "image": "https://media.bakuelectronics.az/media/page/slider/17e-923x520.webp"
+    },
+    {
+      "button_url": "https://www.bakuelectronics.az/xeberler/ilk-baxisdan-sevgi-mac-ile",
+      "image": "https://media.bakuelectronics.az/media/page/slider/macbook-neo-923x520.jpg"
+    },
+    {
+      "button_url": "https://www.bakuelectronics.az/mehsul/samsung-galaxy-buds-4-pro-black-headphone-227388",
+      "image": "https://media.bakuelectronics.az/media/page/slider/Samsung_Galaxy_Buds4_pro.webp"
+    },
+    {
+      "button_url": "https://www.bakuelectronics.az/axtaris-neticesi?name=Smartfon+Samsung+Galaxy+S26",
+      "image": "https://media.bakuelectronics.az/media/page/slider/Samsung_Galaxy_S26_ultra_Buds4_pro.webp"
+    },
+    {
+      "button_url": "https://www.bakuelectronics.az/axtaris-neticesi?name=Smartfon+Samsung+Galaxy+S26+Ultra",
+      "image": "https://media.bakuelectronics.az/media/page/slider/Rəngləri_kəşf_et_Samsung_Galaxy_S26_ultra.webp"
+    },
+    {
+      "button_url": "https://www.bakuelectronics.az/kampaniyalar/mohtesem-furset",
+      "image": "https://media.bakuelectronics.az/media/page/slider/17-pro-923x520_1.jpg"
+    },
+    {
+      "button_url": "https://www.bakuelectronics.az/kampaniyalar/sima-imza-ile-online-alis",
+      "image": "https://media.bakuelectronics.az/media/page/slider/SİMA-İLƏ-ƏMƏKDAŞLIQ-veb-sayt-923-x-520_1.webp"
+    },
+    {
+      "button_url": "https://www.bakuelectronics.az/kampaniyalar/sevenspace-ile-istediyin-olsun",
+      "image": "https://media.bakuelectronics.az/media/page/slider/ss-orucluq-923x520.jpg"
+    },
+    {
+      "button_url": "https://www.bakuelectronics.az/kampaniyalar/bu-movsum-rahatligi-secin",
+      "image": "https://media.bakuelectronics.az/media/page/slider/lg-orucluq-923x520.jpg"
+    },
+    {
+      "button_url": "https://www.bakuelectronics.az/kampaniyalar/sevdiyiniz-texnika-daha-serfeli-qiymete",
+      "image": "https://media.bakuelectronics.az/media/page/slider/bosch-orucluq-923x520.jpg"
+    },
+    {
+      "button_url": "https://www.bakuelectronics.az/kampaniyalar/asus-ile-gucu-hiss-edin",
+      "image": "https://media.bakuelectronics.az/media/page/slider/923_x_5201asus.jpg"
+    },
+    {
+      "button_url": "https://www.bakuelectronics.az/kampaniyalar/enerjini-ozunle-apar",
+      "image": "https://media.bakuelectronics.az/media/page/slider/canyon-923x5201.webp"
+    },
+    {
+      "button_url": "https://www.bakuelectronics.az/kampaniyalar/delonghi-al-blender-hediyye",
+      "image": "https://media.bakuelectronics.az/media/page/slider/delongi_923520.webp"
+    },
+    {
+      "button_url": "https://www.whatsapp.com/channel/0029Vb4c8tl0lwgzdt5Lup0O",
+      "image": "https://media.bakuelectronics.az/media/page/slider/whatsapp-channel-923x520.webp"
+    }
+  ],
+  "homeFeaturesCards": [
+    {
+      "title": "Arxayın al!",
+      "description": "30 günə qədər dəyiş, qaytar.",
+      "icon": "https://media.bakuelectronics.az/media/feature_icons/arxayin-al.svg",
+      "image": "https://media.bakuelectronics.az/media/feature_images/450x295--date.jpg",
+      "image_redirect_url": "https://www.bakuelectronics.az/kampaniyalar/diqqet-qirmizidadir",
+      "icon_redirect_url": "https://www.bakuelectronics.az/arxayin-al",
+      "can_seen_on_mobile": true
+    },
+    {
+      "title": "Hissə-hissə ödəniş",
+      "description": "Endirimli qiyməti 6 aya bölmək imkanı.",
+      "icon": "https://media.bakuelectronics.az/media/feature_icons/endirimli-qiymeti-6ay.svg",
+      "image": "https://media.bakuelectronics.az/media/feature_images/450x295-24.jpg",
+      "image_redirect_url": "https://www.bakuelectronics.az/kampaniyalar/diqqet-qirmizidadir",
+      "icon_redirect_url": "https://www.bakuelectronics.az/nisye-alis",
+      "can_seen_on_mobile": true
+    },
+    {
+      "title": "Sürətli çatdırılma",
+      "description": "24 saata Bakı, Sumqayıt və Xırdalana çatdırılma.",
+      "icon": "https://media.bakuelectronics.az/media/feature_icons/suretli-catdirilma.svg",
+      "image": "https://media.bakuelectronics.az/media/feature_images/450x295--70.jpg",
+      "image_redirect_url": "https://www.bakuelectronics.az/kampaniyalar/diqqet-qirmizidadir",
+      "icon_redirect_url": "https://www.bakuelectronics.az/catdirilma-ve-odenis",
+      "can_seen_on_mobile": true
+    },
+    {
+      "title": "Ödəniş rahatlığı",
+      "description": "Kart, nağd, taksit, hissə-hissə və ya qapıda ödəmə.",
+      "icon": "https://media.bakuelectronics.az/media/feature_icons/odenis-rahatligi.svg",
+      "image": "https://media.bakuelectronics.az/media/feature_images/450x295-trio.jpg",
+      "image_redirect_url": "https://www.bakuelectronics.az/kampaniyalar/diqqet-qirmizidadir",
+      "icon_redirect_url": "https://www.bakuelectronics.az/catdirilma-ve-odenis",
+      "can_seen_on_mobile": true
+    }
+  ]
+}

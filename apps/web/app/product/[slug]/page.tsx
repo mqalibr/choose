@@ -1,6 +1,9 @@
-import type { Metadata } from "next";
+﻿import type { Metadata } from "next";
 import Script from "next/script";
 import { notFound } from "next/navigation";
+import { ProductPage as ProductPageView } from "../../../components/product/ProductPage";
+import { demoProduct } from "../../../components/product/demoProduct";
+import type { ProductPreview } from "../../../components/product/types";
 import { getProductBySlug } from "../../../lib/queries";
 import { buildMetadata, buildProductJsonLd } from "../../../lib/seo";
 
@@ -12,18 +15,26 @@ interface Props {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
+  if (slug === "demo-product") {
+    return buildMetadata({
+      title: demoProduct.name,
+      description: `${demoProduct.offers.length} mağazada qiymət müqayisəsi (demo)`,
+      path: `/product/${slug}`
+    });
+  }
+
   const data = await getProductBySlug(slug);
   if (!data) {
     return buildMetadata({
-      title: "Mehsul tapilmadi",
-      description: "Axtardiginiz mehsul movcud deyil.",
+      title: "Məhsul tapılmadı",
+      description: "Axtardığınız məhsul mövcud deyil.",
       path: `/product/${slug}`
     });
   }
 
   return buildMetadata({
     title: data.product.canonical_name,
-    description: `${data.offers.length} magazada qiymet muqayisesi`,
+    description: `${data.offers.length} mağazada qiymət müqayisəsi`,
     path: `/product/${slug}`
   });
 }
@@ -31,15 +42,34 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function ProductPage({ params }: Props) {
   const { slug } = await params;
   const data = await getProductBySlug(slug);
-  if (!data) notFound();
+  const isDemoRoute = slug === "demo-product";
+
+  if (!data && !isDemoRoute) notFound();
+
+  const previewProduct: ProductPreview = data
+    ? {
+        name: data.product.canonical_name,
+        images: data.product.image_url ? [data.product.image_url, ...demoProduct.images.slice(0, 2)] : demoProduct.images,
+        offers: data.offers.map((offer) => ({
+          store_name: offer.store_name,
+          price: Number(offer.current_price_azn),
+          stock: offer.in_stock ? "Stokda var" : "Stokda yoxdur",
+          link: offer.product_url
+        })),
+        price_history: demoProduct.price_history,
+        similar_products: demoProduct.similar_products,
+        last_updated_at: data.lastUpdatedAt,
+        specs: data.phoneSpecs
+      }
+    : demoProduct;
 
   const jsonLd = buildProductJsonLd({
-    name: data.product.canonical_name,
-    description: `${data.offers.length} magazada qiymet muqayisesi`,
+    name: previewProduct.name,
+    description: `${previewProduct.offers.length} mağazada qiymət müqayisəsi`,
     url: `${process.env.NEXT_PUBLIC_SITE_URL ?? "https://example.com"}/product/${slug}`,
-    image: data.product.image_url,
-    lowPrice: data.lowestPrice,
-    offerCount: data.offers.length
+    image: previewProduct.images[0] ?? null,
+    lowPrice: previewProduct.offers.length ? Math.min(...previewProduct.offers.map((offer) => offer.price)) : null,
+    offerCount: previewProduct.offers.length
   });
 
   return (
@@ -47,35 +77,7 @@ export default async function ProductPage({ params }: Props) {
       <Script id="product-jsonld" type="application/ld+json">
         {JSON.stringify(jsonLd)}
       </Script>
-
-      {data.product.image_url ? (
-        <img
-          src={data.product.image_url}
-          alt={data.product.canonical_name}
-          className="product-hero-image"
-          loading="eager"
-          decoding="async"
-        />
-      ) : null}
-
-      <h2 style={{ marginBottom: 8 }}>{data.product.canonical_name}</h2>
-      <p className="muted">Son yenilenme: {data.lastUpdatedAt ?? "-"}</p>
-      <p>
-        En ucuz qiymet: <strong>{data.lowestPrice ?? "-"} AZN</strong>
-      </p>
-
-      <div className="grid">
-        {data.offers.map((offer) => (
-          <article key={offer.store_product_id} className="card">
-            <strong>{offer.store_name}</strong>
-            <p>Qiymet: {offer.current_price_azn} AZN</p>
-            <p className="muted">Yenilenib: {offer.price_updated_at}</p>
-            <a href={offer.product_url} target="_blank" rel="noreferrer">
-              Magazaya kec
-            </a>
-          </article>
-        ))}
-      </div>
+      <ProductPageView product={previewProduct} />
     </section>
   );
 }

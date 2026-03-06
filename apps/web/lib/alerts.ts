@@ -1,4 +1,4 @@
-import { shortHash } from "@azcompare/shared";
+﻿import { shortHash } from "@azcompare/shared";
 import { getSupabaseServerClient } from "./supabase";
 import { sendTelegramMessage } from "./telegram";
 
@@ -44,12 +44,12 @@ function buildAlertMessage(candidate: TriggeredAlertCandidate): string {
   const target = Number(candidate.target_price_azn).toFixed(2);
 
   return [
-    "QiymetRadar: qiymet hedefi dusdu",
+    "QiymətRadar: qiymət hədəfi düşdü",
     `${candidate.canonical_name}`,
-    `Yeni qiymet: ${price} AZN (hedef: ${target} AZN)`,
-    `Magaza: ${candidate.store_name}`,
-    `Mehsul sehifesi: ${buildProductPageUrl(candidate.product_slug)}`,
-    `Magaza linki: ${candidate.product_url}`
+    `Yeni qiymət: ${price} AZN (hədəf: ${target} AZN)`,
+    `Mağaza: ${candidate.store_name}`,
+    `Məhsul səhifəsi: ${buildProductPageUrl(candidate.product_slug)}`,
+    `Mağaza linki: ${candidate.product_url}`
   ].join("\n");
 }
 

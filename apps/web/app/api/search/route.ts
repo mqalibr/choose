@@ -10,8 +10,10 @@ export async function GET(req: NextRequest) {
     const page = Number(req.nextUrl.searchParams.get("page") ?? "1");
     const limit = Number(req.nextUrl.searchParams.get("limit") ?? "24");
     const sort = (req.nextUrl.searchParams.get("sort") ?? "relevance") as SearchSort;
+    const minOffers = Number(req.nextUrl.searchParams.get("min_offers") ?? "1");
+    const brand = req.nextUrl.searchParams.get("brand") ?? undefined;
 
-    const data = await searchProducts({ q, page, limit, sort });
+    const data = await searchProducts({ q, page, limit, sort, minOffers, brand });
     return NextResponse.json(data, {
       headers: {
         "Cache-Control": "s-maxage=120, stale-while-revalidate=300"

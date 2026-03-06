@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+﻿import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Pagination } from "../../../components/Pagination";
@@ -18,15 +18,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const data = await getStoreBySlug({ slug, page: 1, limit: 1 });
   if (!data) {
     return buildMetadata({
-      title: "Magaza tapilmadi",
-      description: "Axtardiginiz magaza movcud deyil.",
+      title: "Mağaza tapılmadı",
+      description: "Axtardığınız mağaza mövcud deyil.",
       path: `/store/${slug}`
     });
   }
 
   return buildMetadata({
-    title: `${data.store.name} mehsullari`,
-    description: `${data.store.name} ucun en son qiymetler`,
+    title: `${data.store.name} məhsulları`,
+    description: `${data.store.name} üçün ən son qiymətlər`,
     path: `/store/${slug}`
   });
 }
@@ -42,8 +42,8 @@ export default async function StorePage({ params, searchParams }: Props) {
   return (
     <section>
       <h2>{data.store.name}</h2>
-      <p className="muted">Son scrape: {data.store.last_scraped_at ?? "-"}</p>
-      <p className="muted">Aktiv mehsul sayi: {data.total}</p>
+      <p className="muted">Son yenilənmə: {data.store.last_scraped_at ?? "-"}</p>
+      <p className="muted">Aktiv məhsul sayı: {data.total}</p>
 
       <div className="grid">
         {data.items.map((item) => (
@@ -57,10 +57,10 @@ export default async function StorePage({ params, searchParams }: Props) {
                 decoding="async"
               />
             ) : (
-              <div className="card-image card-image-empty">Sekil yoxdur</div>
+              <div className="card-image card-image-empty">Şəkil yoxdur</div>
             )}
             <strong>{item.canonical_name}</strong>
-            <p className="muted">Qiymet: {item.min_price_azn ?? "-"} AZN</p>
+            <p className="muted">Qiymət: {item.min_price_azn ?? "-"} AZN</p>
           </Link>
         ))}
       </div>

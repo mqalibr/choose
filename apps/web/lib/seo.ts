@@ -1,6 +1,6 @@
-import type { Metadata } from "next";
+﻿import type { Metadata } from "next";
 
-const SITE_NAME = "QiymetRadar";
+const SITE_NAME = "QiymətRadar";
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://example.com";
 
 export function buildMetadata(input: {

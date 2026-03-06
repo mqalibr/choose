@@ -18,6 +18,13 @@ function toPositiveInt(input: string | undefined, fallback: number): number {
   return Math.floor(value);
 }
 
+function sanitizeSpecText(value: string): string {
+  return value
+    .replace(/\s+/g, " ")
+    .replace(/[:]+$/, "")
+    .trim();
+}
+
 function getCategoryUrls(): string[] {
   const raw = process.env.IRSHAD_CATEGORY_URLS;
   if (!raw?.trim()) return DEFAULT_CATEGORY_URLS;
@@ -156,14 +163,157 @@ async function extractVisibleItems(
   return rows as RawStoreItem[];
 }
 
+async function extractDetailSpecs(page: Page, productUrl: string): Promise<Record<string, string>> {
+  await withRetry(
+    async () => {
+      await page.goto(productUrl, { waitUntil: "domcontentloaded", timeout: 90_000 });
+      await page.waitForTimeout(1_400);
+    },
+    { attempts: 3, baseDelayMs: 900 }
+  );
+
+  const specs = (await page.evaluate(`(() => {
+    const out = {};
+    const clean = (value) =>
+      String(value || "")
+        .replace(/\\s+/g, " ")
+        .replace(/[:]+$/, "")
+        .trim();
+
+    const addPair = (key, value) => {
+      const k = clean(key);
+      const v = clean(value);
+      if (!k || !v) return;
+      if (k.length > 140 || v.length > 400) return;
+      out[k] = v;
+    };
+
+    // Primary selector on Irshad product pages.
+    const techBlocks = Array.from(document.querySelectorAll(".product-view__details__technical-info__item"));
+    for (const block of techBlocks) {
+      const lines = (block.textContent || "")
+        .split("\\n")
+        .map(clean)
+        .filter(Boolean);
+
+      for (const line of lines) {
+        const idx = line.indexOf(":");
+        if (idx < 1) continue;
+        addPair(line.slice(0, idx), line.slice(idx + 1));
+      }
+    }
+
+    if (Object.keys(out).length >= 4) {
+      return out;
+    }
+
+    // Fallback selectors for variant templates.
+    const rows = Array.from(
+      document.querySelectorAll(
+        ".specifications tr, .product-specification tr, .product-properties tr, .tabs__content tr, table tr"
+      )
+    );
+    for (const row of rows) {
+      const keyEl = row.querySelector("th, td:first-child, .name, .title, .label, .left");
+      const valueEl = row.querySelector("td:last-child, .value, .right, .desc, .description");
+      addPair(keyEl ? keyEl.textContent : "", valueEl ? valueEl.textContent : "");
+    }
+
+    if (Object.keys(out).length >= 4) {
+      return out;
+    }
+
+    const textBlocks = Array.from(
+      document.querySelectorAll(
+        ".product-view__details, .tabs__content, .characteristics, .product-details, .specifications"
+      )
+    );
+    for (const block of textBlocks) {
+      const lines = (block.textContent || "")
+        .split("\\n")
+        .map(clean)
+        .filter(Boolean);
+      for (const line of lines) {
+        const idx = line.indexOf(":");
+        if (idx < 1) continue;
+        addPair(line.slice(0, idx), line.slice(idx + 1));
+      }
+    }
+
+    return out;
+  })()`)) as Record<string, string>;
+
+  return specs;
+}
+
+async function enrichItemsWithDetailSpecs(
+  ctx: Parameters<StoreScraper["scrape"]>[0],
+  items: RawStoreItem[],
+  options: {
+    maxDetailItems: number;
+    detailDelayMs: number;
+    detailItemsProcessed: number;
+  }
+): Promise<number> {
+  let processed = options.detailItemsProcessed;
+
+  for (const item of items) {
+    if (processed >= options.maxDetailItems) break;
+    if (item.categorySlug !== "telefonlar" && item.categorySlug !== "plansetler") continue;
+
+    const detailPage = await ctx.pageFactory();
+    await detailPage.setExtraHTTPHeaders({
+      "accept-language": "az,en-US;q=0.9,en;q=0.8"
+    });
+
+    try {
+      const rawSpecs = await extractDetailSpecs(detailPage, item.productUrl);
+      if (rawSpecs && Object.keys(rawSpecs).length > 0) {
+        const specs: Record<string, string> = {};
+        for (const [key, value] of Object.entries(rawSpecs)) {
+          const cleanKey = sanitizeSpecText(key);
+          const cleanValue = sanitizeSpecText(value);
+          if (!cleanKey || !cleanValue) continue;
+          specs[cleanKey] = cleanValue;
+        }
+
+        if (Object.keys(specs).length > 0) {
+          item.specsRaw = specs;
+        }
+      }
+    } catch (error) {
+      logger.warn(
+        { store: STORE_SLUG, productUrl: item.productUrl, error: (error as Error).message },
+        "Irshad detail specs parse failed"
+      );
+    } finally {
+      await detailPage.close();
+    }
+
+    processed += 1;
+    if (options.detailDelayMs > 0) {
+      await new Promise((resolve) => setTimeout(resolve, options.detailDelayMs));
+    }
+  }
+
+  return processed;
+}
+
 export const irshadScraper: StoreScraper = {
   storeSlug: STORE_SLUG,
   async scrape(ctx) {
     const maxPagesPerCategory = toPositiveInt(process.env.IRSHAD_MAX_PAGES_PER_CATEGORY, 3);
+    const detailEnabled = process.env.IRSHAD_FETCH_DETAIL_SPECS !== "false";
+    const detailDelayMs = toPositiveInt(process.env.IRSHAD_DETAIL_DELAY_MS, 250);
     const maxItems = ctx.maxItems ?? Number.MAX_SAFE_INTEGER;
+    const maxDetailItems = toPositiveInt(
+      process.env.IRSHAD_MAX_DETAIL_ITEMS,
+      Number.isFinite(maxItems) && maxItems <= 400 ? maxItems : 120
+    );
     const categoryUrls = getCategoryUrls();
     const categoryErrors: string[] = [];
     const listingMap = new Map<string, RawStoreItem>();
+    let detailItemsProcessed = 0;
 
     for (const categoryUrl of categoryUrls) {
       const page = await ctx.pageFactory();
@@ -186,6 +336,13 @@ export const irshadScraper: StoreScraper = {
         }
 
         const items = await extractVisibleItems(page, new Date().toISOString(), categorySlug);
+        if (detailEnabled && detailItemsProcessed < maxDetailItems) {
+          detailItemsProcessed = await enrichItemsWithDetailSpecs(ctx, items, {
+            maxDetailItems,
+            detailDelayMs,
+            detailItemsProcessed
+          });
+        }
         for (const item of items) {
           listingMap.set(`${item.storeSlug}|${item.listingKey}`, item);
           if (listingMap.size >= maxItems) {
@@ -215,4 +372,3 @@ export const irshadScraper: StoreScraper = {
     return result;
   }
 };
-

@@ -23,6 +23,77 @@ interface ExistingMappingRow {
   price_updated_at: string | null;
 }
 
+function hasPhoneSpecValue(item: NormalizedItem): boolean {
+  if (!item.phoneSpecs) return false;
+
+  return Object.entries(item.phoneSpecs).some(([key, value]) => {
+    if (key === "specsConfidence") return false;
+    if (key === "rawSpecs") {
+      return Boolean(value && Object.keys(value as Record<string, unknown>).length > 0);
+    }
+    return value !== null && value !== undefined;
+  });
+}
+
+function hasRawSpecs(item: NormalizedItem): boolean {
+  return Boolean(item.rawSpecs && Object.keys(item.rawSpecs).length > 0);
+}
+
+async function upsertPhoneSpecs(productId: number, item: NormalizedItem): Promise<void> {
+  if (!item.phoneSpecs || !hasPhoneSpecValue(item)) return;
+
+  const specs = item.phoneSpecs;
+  const payload: Record<string, unknown> = {
+    product_id: productId,
+    last_parsed_at: item.scrapedAt
+  };
+
+  if (specs.batteryMah != null) payload.battery_mah = specs.batteryMah;
+  if (specs.hasNfc !== null && specs.hasNfc !== undefined) payload.has_nfc = specs.hasNfc;
+  if (specs.ramGb != null) payload.ram_gb = specs.ramGb;
+  if (specs.storageGb != null) payload.storage_gb = specs.storageGb;
+  if (specs.chipsetVendor) payload.chipset_vendor = specs.chipsetVendor;
+  if (specs.chipsetModel) {
+    payload.chipset_model = specs.chipsetModel;
+    payload.chipset = specs.chipsetModel;
+  }
+  if (specs.cpuCores != null) payload.cpu_cores = specs.cpuCores;
+  if (specs.gpuModel) payload.gpu_model = specs.gpuModel;
+  if (specs.osName) payload.os_name = specs.osName;
+  if (specs.osVersion) payload.os_version = specs.osVersion;
+  if (specs.simCount != null) payload.sim_count = specs.simCount;
+  if (specs.hasEsim !== null && specs.hasEsim !== undefined) payload.has_esim = specs.hasEsim;
+  if (specs.hasWifi6 !== null && specs.hasWifi6 !== undefined) payload.has_wifi_6 = specs.hasWifi6;
+  if (specs.bluetoothVersion) payload.bluetooth_version = specs.bluetoothVersion;
+  if (specs.mainCameraMp != null) payload.main_camera_mp = specs.mainCameraMp;
+  if (specs.ultrawideCameraMp != null) payload.ultrawide_camera_mp = specs.ultrawideCameraMp;
+  if (specs.telephotoCameraMp != null) payload.telephoto_camera_mp = specs.telephotoCameraMp;
+  if (specs.selfieCameraMp != null) payload.selfie_camera_mp = specs.selfieCameraMp;
+  if (specs.hasOis !== null && specs.hasOis !== undefined) payload.has_ois = specs.hasOis;
+  if (specs.hasWirelessCharge !== null && specs.hasWirelessCharge !== undefined) {
+    payload.has_wireless_charge = specs.hasWirelessCharge;
+  }
+  if (specs.wiredChargeW != null) payload.wired_charge_w = specs.wiredChargeW;
+  if (specs.wirelessChargeW != null) payload.wireless_charge_w = specs.wirelessChargeW;
+  if (specs.has5g !== null && specs.has5g !== undefined) payload.has_5g = specs.has5g;
+  if (specs.screenSizeIn != null) payload.screen_size_in = specs.screenSizeIn;
+  if (specs.refreshRateHz != null) payload.refresh_rate_hz = specs.refreshRateHz;
+  if (specs.panelType) payload.panel_type = specs.panelType;
+  if (specs.resolutionWidth != null) payload.resolution_width = specs.resolutionWidth;
+  if (specs.resolutionHeight != null) payload.resolution_height = specs.resolutionHeight;
+  if (specs.weightG != null) payload.weight_g = specs.weightG;
+  if (specs.ipRating) payload.ip_rating = specs.ipRating;
+  if (specs.releaseYear != null) payload.release_year = specs.releaseYear;
+  if (specs.specsConfidence != null) payload.specs_confidence = specs.specsConfidence;
+  if (specs.rawSpecs && Object.keys(specs.rawSpecs).length > 0) payload.raw_specs = specs.rawSpecs;
+
+  const supabase = getSupabaseClient();
+  const { error } = await supabase.from("phone_specs").upsert(payload, { onConflict: "product_id" });
+  if (error) {
+    logger.warn({ error, productId, payload }, "Failed to upsert phone_specs");
+  }
+}
+
 function buildSlugCandidates(baseSlug: string, fingerprint: string): string[] {
   return [baseSlug, `${baseSlug}-${shortHash(fingerprint, 5)}`];
 }
@@ -31,7 +102,7 @@ async function resolveProductId(item: NormalizedItem, categoryId: number | null)
   const supabase = getSupabaseClient();
   const { data: existingProduct, error: existingError } = await supabase
     .from("products")
-    .select("id,category_id")
+    .select("id,category_id,brand,model,image_url,specs")
     .eq("fingerprint", item.fingerprint)
     .maybeSingle();
 
@@ -40,16 +111,21 @@ async function resolveProductId(item: NormalizedItem, categoryId: number | null)
   }
 
   if (existingProduct?.id) {
+    const patch: Record<string, unknown> = {
+      canonical_name: item.canonicalName,
+      normalized_name: item.normalizedTitle,
+      brand: item.brand ?? existingProduct.brand ?? null,
+      model: item.model ?? existingProduct.model ?? null,
+      image_url: item.imageUrl ?? existingProduct.image_url ?? null,
+      specs: hasRawSpecs(item) ? item.rawSpecs : existingProduct.specs ?? {},
+      // Keep product category in sync with the latest normalized item.
+      // This also allows clearing previously wrong categories (set to null).
+      category_id: categoryId
+    };
+
     await supabase
       .from("products")
-      .update({
-        canonical_name: item.canonicalName,
-        normalized_name: item.normalizedTitle,
-        brand: item.brand ?? null,
-        model: item.model ?? null,
-        image_url: item.imageUrl ?? null,
-        category_id: existingProduct.category_id ?? categoryId
-      })
+      .update(patch)
       .eq("id", existingProduct.id);
     return existingProduct.id;
   }
@@ -68,6 +144,7 @@ async function resolveProductId(item: NormalizedItem, categoryId: number | null)
         brand: item.brand ?? null,
         model: item.model ?? null,
         image_url: item.imageUrl ?? null,
+        specs: hasRawSpecs(item) ? item.rawSpecs : {},
         category_id: categoryId
       })
       .select("id")
@@ -196,17 +273,21 @@ export async function upsertNormalizedItems(
     let productId: number;
     if ((existingMapping as ExistingMappingRow | null)?.product_id) {
       productId = (existingMapping as ExistingMappingRow).product_id;
+      const { data: existingProduct } = await supabase
+        .from("products")
+        .select("brand,model,image_url,specs")
+        .eq("id", productId)
+        .maybeSingle();
 
       const patch: Record<string, unknown> = {
         canonical_name: item.canonicalName,
         normalized_name: item.normalizedTitle,
-        brand: item.brand ?? null,
-        model: item.model ?? null,
-        image_url: item.imageUrl ?? null
+        brand: item.brand ?? existingProduct?.brand ?? null,
+        model: item.model ?? existingProduct?.model ?? null,
+        image_url: item.imageUrl ?? existingProduct?.image_url ?? null,
+        specs: hasRawSpecs(item) ? item.rawSpecs : existingProduct?.specs ?? {},
+        category_id: categoryId
       };
-      if (categoryId !== null) {
-        patch.category_id = categoryId;
-      }
 
       await supabase.from("products").update(patch).eq("id", productId);
     } else {
@@ -216,6 +297,10 @@ export async function upsertNormalizedItems(
         logger.error({ error: productError, item }, "Failed to resolve product");
         continue;
       }
+    }
+
+    if (item.categorySlug === "telefonlar") {
+      await upsertPhoneSpecs(productId, item);
     }
 
     const isNew = !existingMapping;

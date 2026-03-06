@@ -1,4 +1,4 @@
-import { logger } from "../core/logger";
+﻿import { logger } from "../core/logger";
 import { withRetry } from "../core/retry";
 import type { RawStoreItem, StoreScraper } from "../core/types";
 
@@ -42,6 +42,14 @@ function inferCategorySlug(url: string): string | null {
   if (value.includes("televizor") || value.includes("/tv-")) return "televizorlar";
   if (value.includes("planset") || value.includes("tablet")) return "plansetler";
   return null;
+}
+
+function sanitizeSpecText(value: string): string {
+  return value
+    .replace(/\s+/g, " ")
+    .replace(/\s+i$/i, "")
+    .replace(/[:]+$/, "")
+    .trim();
 }
 
 async function loadAndValidateCategoryPage(page: any, url: string, challengeRetries: number) {
@@ -152,16 +160,145 @@ async function extractPageItems(page: any, scrapedAt: string, categorySlug: stri
   );
 }
 
+async function extractDetailSpecs(page: any, productUrl: string, challengeRetries: number): Promise<Record<string, string>> {
+  await withRetry(
+    async () => {
+      await page.goto(productUrl, { waitUntil: "domcontentloaded", timeout: 90_000 });
+      await page.waitForTimeout(2_000);
+    },
+    { attempts: 3, baseDelayMs: 1_200 }
+  );
+
+  for (let attempt = 0; attempt < challengeRetries; attempt += 1) {
+    const title = await page.title();
+    if (!isChallengePage(title)) break;
+    await page.waitForTimeout(4_000 + attempt * 1_500);
+    await page.reload({ waitUntil: "domcontentloaded", timeout: 90_000 });
+  }
+
+  const title = await page.title();
+  if (isChallengePage(title)) {
+    throw new Error(`Cloudflare challenge on Kontakt detail page: ${productUrl}`);
+  }
+
+  await page.waitForTimeout(1_500);
+
+  const specs = (await page.evaluate(`(() => {
+    const output = {};
+    const clean = (value) =>
+      String(value || "")
+        .replace(/\\s+/g, " ")
+        .replace(/\\s+i$/i, "")
+        .replace(/[:]+$/, "")
+        .trim();
+
+    const rows = Array.from(document.querySelectorAll(".har__row"));
+    for (const row of rows) {
+      const titleEl = row.querySelector(".har__title");
+      const valueEl = row.querySelector(".har__znach, .har__value, .har__description, .har__desc");
+      const label = clean(titleEl ? titleEl.textContent : "");
+      let value = clean(valueEl ? valueEl.textContent : "");
+
+      if (!value && label) {
+        const flat = clean(row.textContent || "");
+        value = flat.startsWith(label) ? clean(flat.slice(label.length)) : flat;
+      }
+
+      if (label && value) {
+        output[label] = value;
+      }
+    }
+
+    if (Object.keys(output).length > 0) {
+      return output;
+    }
+
+    const tableRows = Array.from(document.querySelectorAll("table tr"));
+    for (const row of tableRows) {
+      const labelEl = row.querySelector("th,td:first-child,.name,.title,.label,.left");
+      const valueEl = row.querySelector("td:last-child,.value,.right,.desc,.description");
+      const label = clean(labelEl ? labelEl.textContent : "");
+      const value = clean(valueEl ? valueEl.textContent : "");
+      if (label && value) {
+        output[label] = value;
+      }
+    }
+
+    return output;
+  })()`)) as Record<string, string>;
+
+  return specs;
+}
+
+async function enrichItemsWithDetailSpecs(
+  ctx: Parameters<StoreScraper["scrape"]>[0],
+  items: RawStoreItem[],
+  options: {
+    challengeRetries: number;
+    maxDetailItems: number;
+    detailDelayMs: number;
+    detailItemsProcessed: number;
+  }
+): Promise<number> {
+  let processed = options.detailItemsProcessed;
+  for (const item of items) {
+    if (item.categorySlug !== "telefonlar" && item.categorySlug !== "plansetler") continue;
+    if (processed >= options.maxDetailItems) break;
+
+    const detailPage = await ctx.pageFactory();
+    await detailPage.setExtraHTTPHeaders({
+      "accept-language": "az,en-US;q=0.9,en;q=0.8"
+    });
+
+    try {
+      const rawSpecs = await extractDetailSpecs(detailPage, item.productUrl, options.challengeRetries);
+      if (rawSpecs && typeof rawSpecs === "object" && Object.keys(rawSpecs).length > 0) {
+        const sanitizedSpecs: Record<string, string> = {};
+        for (const [key, value] of Object.entries(rawSpecs)) {
+          const cleanKey = sanitizeSpecText(key);
+          const cleanValue = sanitizeSpecText(value);
+          if (!cleanKey || !cleanValue) continue;
+          sanitizedSpecs[cleanKey] = cleanValue;
+        }
+        if (Object.keys(sanitizedSpecs).length > 0) {
+          item.specsRaw = sanitizedSpecs;
+        }
+      }
+    } catch (error) {
+      logger.warn(
+        { store: STORE_SLUG, productUrl: item.productUrl, error: (error as Error).message },
+        "Kontakt detail specs could not be parsed"
+      );
+    } finally {
+      await detailPage.close();
+    }
+
+    processed += 1;
+    if (options.detailDelayMs > 0) {
+      await new Promise((resolve) => setTimeout(resolve, options.detailDelayMs));
+    }
+  }
+
+  return processed;
+}
+
 export const kontaktHomeScraper: StoreScraper = {
   storeSlug: STORE_SLUG,
   async scrape(ctx) {
     const maxPagesPerCategory = toPositiveInt(process.env.KONTAKT_MAX_PAGES_PER_CATEGORY, 2);
     const challengeRetries = toPositiveInt(process.env.KONTAKT_CHALLENGE_RETRIES, 2);
     const maxItems = ctx.maxItems ?? Number.MAX_SAFE_INTEGER;
+    const detailEnabled = process.env.KONTAKT_FETCH_DETAIL_SPECS !== "false";
+    const detailDelayMs = toPositiveInt(process.env.KONTAKT_DETAIL_DELAY_MS, 350);
+    const maxDetailItems = toPositiveInt(
+      process.env.KONTAKT_MAX_DETAIL_ITEMS,
+      Number.isFinite(maxItems) && maxItems <= 400 ? maxItems : 120
+    );
     const categoryUrls = getCategoryUrls();
 
     const results: RawStoreItem[] = [];
     const categoryErrors: string[] = [];
+    let detailItemsProcessed = 0;
 
     for (const categoryUrl of categoryUrls) {
       const page = await ctx.pageFactory();
@@ -184,6 +321,15 @@ export const kontaktHomeScraper: StoreScraper = {
           const pageItems = await extractPageItems(page, new Date().toISOString(), categorySlug);
           if (!pageItems.length) {
             throw new Error(`No parsable products on Kontakt page: ${currentUrl}`);
+          }
+
+          if (detailEnabled && detailItemsProcessed < maxDetailItems) {
+            detailItemsProcessed = await enrichItemsWithDetailSpecs(ctx, pageItems, {
+              challengeRetries,
+              maxDetailItems,
+              detailDelayMs,
+              detailItemsProcessed
+            });
           }
 
           results.push(...pageItems);
@@ -222,3 +368,4 @@ export const kontaktHomeScraper: StoreScraper = {
 };
 
 export { USER_AGENT as KONTAKT_USER_AGENT };
+

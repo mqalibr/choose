@@ -14,7 +14,10 @@ export async function GET(req: NextRequest, { params }: Props) {
     const page = Number(req.nextUrl.searchParams.get("page") ?? "1");
     const limit = Number(req.nextUrl.searchParams.get("limit") ?? "24");
     const sort = (req.nextUrl.searchParams.get("sort") ?? "price_asc") as SearchSort;
-    const data = await getCategoryBySlug({ slug, page, limit, sort });
+    const minOffers = Number(req.nextUrl.searchParams.get("min_offers") ?? "1");
+    const brand = req.nextUrl.searchParams.get("brand") ?? undefined;
+    const store = req.nextUrl.searchParams.get("store") ?? undefined;
+    const data = await getCategoryBySlug({ slug, page, limit, sort, minOffers, brand, store });
 
     if (!data) {
       return NextResponse.json({ error: "NOT_FOUND" }, { status: 404 });

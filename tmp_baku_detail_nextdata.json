@@ -1,0 +1,877 @@
+{
+  "props": {
+    "pageProps": {
+      "prodDetails": {
+        "id": 125714,
+        "title": "Smartfon Apple iPhone Air 512GB LIGHT GOLD",
+        "productCode": 222776,
+        "slug": "telefon-iphone-air-512gb-light-gold-222776",
+        "price": 3439.99,
+        "price_start_date": "2026-03-01",
+        "price_end_date": "2026-03-31",
+        "discount": "260",
+        "perMonth": {
+          "month": 12,
+          "price": 265
+        },
+        "brand": "apple",
+        "brand_name": "Apple",
+        "productId": null,
+        "quantity": 5,
+        "bonus": 0,
+        "about": "",
+        "review_count": 0,
+        "averageRate": 0,
+        "status": true,
+        "images": [
+          "https://media.bakuelectronics.az/media/inventImages/inventImages/Apple_iPhone_Air__10_ojkdrT3.webp",
+          "https://media.bakuelectronics.az/media/inventImages/inventImages/Apple_iPhone_Air__9_VncHSf8.webp",
+          "https://media.bakuelectronics.az/media/inventImages/inventImages/Apple_iPhone_Air__7_m5W9XUk.webp",
+          "https://media.bakuelectronics.az/media/inventImages/inventImages/Apple_iPhone_Air__5_JXwFWi8.webp",
+          "https://media.bakuelectronics.az/media/inventImages/inventImages/Apple_iPhone_Air__6_Ho92Nz7.webp",
+          "https://media.bakuelectronics.az/media/inventImages/inventImages/Apple_iPhone_Air__8_sbfj085.webp",
+          "https://media.bakuelectronics.az/media/inventImages/inventImages/Apple_iPhone_Air__1_yujkpgn.webp"
+        ],
+        "video": null,
+        "gifts": [],
+        "extra": [],
+        "attributes": [
+          {
+            "key": "İstehsalçı ölkə",
+            "value": "Çin"
+          },
+          {
+            "key": "Məhsul tipi",
+            "value": "Smartfon"
+          },
+          {
+            "key": "Marka",
+            "value": "Apple"
+          },
+          {
+            "key": "Əməliyyat sistemi",
+            "value": "iOS 26"
+          },
+          {
+            "key": "Prosessor tipi",
+            "value": "Apple A19 (3 nm)"
+          },
+          {
+            "key": "Prosessor tezliyi",
+            "value": "2x4.26 GHz + 4xX.X GHz"
+          },
+          {
+            "key": "Frontal kamera",
+            "value": "18 mpx"
+          },
+          {
+            "key": "Kamera",
+            "value": "48MP(f/1.8) / 18 MP(f/1.9)"
+          },
+          {
+            "key": "Əlavə məlumat",
+            "value": "Face ID, accelerometer, gyro, "
+          },
+          {
+            "key": "SIM-kart sayı",
+            "value": "1"
+          },
+          {
+            "key": "Şəbəkə",
+            "value": "2G,3G,4G,5G"
+          },
+          {
+            "key": "Wi-Fi",
+            "value": "Wi-Fi 802.11 a/b/g/n/ac/6"
+          },
+          {
+            "key": "NFC",
+            "value": "var"
+          },
+          {
+            "key": "Ekranın ölçüsü",
+            "value": "6.5\""
+          },
+          {
+            "key": "Ekran icazəsi",
+            "value": "1260 x 2736"
+          },
+          {
+            "key": "Əsas kamera",
+            "value": "48MP"
+          },
+          {
+            "key": "Bluetooth",
+            "value": "6.0, A2DP, LE"
+          },
+          {
+            "key": "Video çəkiliş",
+            "value": "4K@24/25/30/60fps"
+          },
+          {
+            "key": "Operativ yaddaş",
+            "value": "12 GB"
+          },
+          {
+            "key": "Quraşdırılmış yaddaş",
+            "value": "512 GB"
+          },
+          {
+            "key": "Sudan və tozdan qorunma",
+            "value": "IP68 dust/water resistant"
+          },
+          {
+            "key": "Led fləş",
+            "value": "var"
+          },
+          {
+            "key": "Diafraqma",
+            "value": "f/1.6"
+          },
+          {
+            "key": "Korpus Materialı",
+            "value": "Şüşə, Paslanmayan polad"
+          },
+          {
+            "key": "Ekran",
+            "value": "Ceramic Shield 2"
+          },
+          {
+            "key": "Avtofokus",
+            "value": "var"
+          },
+          {
+            "key": "Optik zoom",
+            "value": "var"
+          },
+          {
+            "key": "Nüvələrin sayı",
+            "value": "6"
+          },
+          {
+            "key": "Şarj bağlayıcısı",
+            "value": "USB Type-C 2.0, DisplayPort"
+          },
+          {
+            "key": "Naviqasiya sistemi",
+            "value": "A-GPS, GLONASS, GALILEO, BDS, "
+          },
+          {
+            "key": "Simsiz şarj imkanı",
+            "value": "var"
+          },
+          {
+            "key": "Simsiz qoşulma",
+            "value": "var"
+          },
+          {
+            "key": "Qrafik prosessor",
+            "value": "Apple GPU (5-core graphics)"
+          },
+          {
+            "key": "Rəng",
+            "value": "Qızılı"
+          },
+          {
+            "key": "Çəki",
+            "value": "165  g"
+          },
+          {
+            "key": "Ölçülər: Hündürlüyü / Eni / Dərinliyi",
+            "value": "156.2 x 74.7 x 5.6 mm"
+          },
+          {
+            "key": "Akkumulyatorun həcmi",
+            "value": "Li-Ion 3149 mAh"
+          },
+          {
+            "key": "SIM-kart",
+            "value": "eSIM+eSIM"
+          },
+          {
+            "key": "eSIM",
+            "value": "var"
+          },
+          {
+            "key": "Zәmanәt",
+            "value": "1 il"
+          },
+          {
+            "key": "Qablaşdırmaya daxildir",
+            "value": "sənədlər, kabel USB-C to Light"
+          }
+        ],
+        "breadcrumb": [
+          {
+            "slug": "telefonlar-plansetler",
+            "name": "Smartfonlar və planşetlər"
+          },
+          {
+            "slug": "smartfonlar-mobil-telefonlar",
+            "name": "Smartfonlar"
+          },
+          {
+            "name": "Smartfon Apple iPhone Air 512GB LIGHT GOLD"
+          }
+        ],
+        "barcode": "",
+        "widgets": {
+          "gifts": [],
+          "tags": [],
+          "campaign": [],
+          "company": []
+        },
+        "is_online": false,
+        "is_online_price": false,
+        "seo": {
+          "title": "Smartfon Apple iPhone Air 512GB LIGHT GOLD qiyməti ✅",
+          "description": "Smartfon Apple iPhone Air 512GB LIGHT GOLD nağd və hissə-hissə alış imkanlar ilə Baku Electronics-də"
+        },
+        "installments": [
+          {
+            "id": 2,
+            "slug": "birbank",
+            "cardName": "Birbank",
+            "image": "https://media.bakuelectronics.az/media/credit_cards/birbank.png",
+            "condition": [
+              {
+                "month": 3,
+                "percent": 0
+              },
+              {
+                "month": 6,
+                "percent": 0
+              },
+              {
+                "month": 9,
+                "percent": 0
+              },
+              {
+                "month": 12,
+                "percent": 0
+              }
+            ]
+          },
+          {
+            "id": 4,
+            "slug": "tamkart",
+            "cardName": "Tamkart",
+            "image": "https://media.bakuelectronics.az/media/credit_cards/tamkart.svg",
+            "condition": [
+              {
+                "month": 3,
+                "percent": 0
+              },
+              {
+                "month": 6,
+                "percent": 0
+              },
+              {
+                "month": 9,
+                "percent": 0
+              },
+              {
+                "month": 12,
+                "percent": 0
+              }
+            ]
+          }
+        ],
+        "buyTogether": [
+          {
+            "name": "Qulaqlıq Apple EarPods (USB-C) - MYQY3ZM/A",
+            "slug": "earpods-usb-c-217592",
+            "price": 69.99,
+            "discount": "5",
+            "perMonth": {
+              "month": 6,
+              "price": 10.83
+            },
+            "image": "https://media.bakuelectronics.az/media/inventImages/MYQY3ZMA_1.webp"
+          },
+          {
+            "name": "Qulaqlıq Apple EarPods (USB-C) - MYQY3ZM/A",
+            "slug": "earpods-usb-c-217592",
+            "price": 69.99,
+            "discount": "5",
+            "perMonth": {
+              "month": 6,
+              "price": 10.83
+            },
+            "image": "https://media.bakuelectronics.az/media/inventImages/MYQY3ZMA_1.webp"
+          },
+          {
+            "name": "Qulaqlıq Apple EarPods 3.5mm (MWU53ZM/A)",
+            "slug": "earpods-35mm-headphone-plug-219764",
+            "price": 69.99,
+            "discount": "5",
+            "perMonth": {
+              "month": 6,
+              "price": 10.83
+            },
+            "image": "https://media.bakuelectronics.az/media/inventImages/MWU53ZMA_1.webp"
+          },
+          {
+            "name": "Smart saat Apple Watch Ultra 2 GPS + Cellular, 49mm Titanium Case with White Ocean Band (MREJ3RB/A)",
+            "slug": "apple-watch-ultra-2-gps-cellular-49mm-titanium-case-with-white-ocean-band-194677",
+            "price": 2399.99,
+            "discount": "200",
+            "perMonth": {
+              "month": 6,
+              "price": 366.66
+            },
+            "image": "https://media.bakuelectronics.az/media/inventImages/smart-saat-apple-watch-ultra-2-gps-cellular-49mm-titanium-case-with-white-_wxA048N.webp"
+          },
+          {
+            "name": "Qulaqlıq Apple EarPods Lightning Connector (MWTY3ZM/A)",
+            "slug": "earpods-lightning-connector-216175",
+            "price": 69.99,
+            "discount": "5",
+            "perMonth": {
+              "month": 6,
+              "price": 10.83
+            },
+            "image": "https://media.bakuelectronics.az/media/inventImages/Qulaqlıq_Apple_EarPods_Lightning_Connector_MWTY3ZMA_1.webp"
+          },
+          {
+            "name": "Smart saat Apple Watch Ultra 2 2024, 49mm Black Titanium Case with Dark Green Alpine Loop - Medium (MX4R3RB/A)",
+            "slug": "apple-watch-ultra-2-gps-49mm-black-titanium-dark-green-alpine-loop-medium-212401",
+            "price": 2399.99,
+            "discount": "200",
+            "perMonth": {
+              "month": 6,
+              "price": 366.66
+            },
+            "image": "https://media.bakuelectronics.az/media/inventImages/smart-saat-apple-watch-ultra-2-2024-black-titanium-case-with-dark-green-al_A8zzgY6.webp"
+          },
+          {
+            "name": "Smart saat Apple Watch Series 10 GPS, 42mm Rose Gold Aluminium Case with Light Blush Sport Band - S/M (MWWH3QI/A)",
+            "slug": "apple-watch-series-10-gps-42mm-rose-gold-aluminium-light-blush-sport-band-sm-212392",
+            "price": 1199.99,
+            "discount": "420",
+            "perMonth": {
+              "month": 6,
+              "price": 130
+            },
+            "image": "https://media.bakuelectronics.az/media/inventImages/smart-saat-apple-watch-series-10-gps-42mm-rose-gold-aluminium-case-with-li_65ocD5d.webp"
+          },
+          {
+            "name": "Smart saat Apple Watch Ultra 2 GPS + Cellular, 49mm Titanium Case With Olive Alpine - M (MREY3GK/A)",
+            "slug": "apple-watch-ultra-2-gps-cellular-49mm-titanium-case-with-olive-alpine-m-203968",
+            "price": 2399.99,
+            "discount": "200",
+            "perMonth": {
+              "month": 6,
+              "price": 366.66
+            },
+            "image": "https://media.bakuelectronics.az/media/inventImages/inventImages/smart-saat-apple-watch-ultra-2-gps-cellular-49mm-titanium-cas_RzrvWMh.webp"
+          },
+          {
+            "name": "Smart saat Apple Watch SE GPS Gen.2 (2024), 40mm Silver Aluminium Denim Sport Band S/M (MXEC3QI/A)",
+            "slug": "apple-watch-se-gps-40mm-silver-aluminium-denim-sport-band-sm-212386",
+            "price": 719.99,
+            "discount": "70",
+            "perMonth": {
+              "month": 6,
+              "price": 108.33
+            },
+            "image": "https://media.bakuelectronics.az/media/inventImages/smart-saat-apple-watch-se-gps-gen2-2024-40mm-silver-aluminium-denim-sport-_j6CVNBG.webp"
+          },
+          {
+            "name": "Smart saat Apple Watch Series 10 GPS, 42mm Silver Aluminium Case with Denim Sport Band - S/M (MWWA3QI/A)",
+            "slug": "apple-watch-series-10-gps-42mm-silver-aluminium-denim-sport-band-sm-212388",
+            "price": 1199.99,
+            "discount": "420",
+            "perMonth": {
+              "month": 6,
+              "price": 130
+            },
+            "image": "https://media.bakuelectronics.az/media/inventImages/smart-saat-apple-watch-series-10-gps-42mm-silver-aluminium-case-with-denim_fsMc2OG.webp"
+          },
+          {
+            "name": "Smart saat Apple Watch SE GPS Gen.2 (2024), 40mm Starlight Aluminium Starlight Sport Band S/M (MXEF3QI/A)",
+            "slug": "apple-watch-se-gps-40mm-starlight-aluminium-starlight-sport-band-sm-212387",
+            "price": 719.99,
+            "discount": "70",
+            "perMonth": {
+              "month": 6,
+              "price": 108.33
+            },
+            "image": "https://media.bakuelectronics.az/media/inventImages/smart-saat-apple-watch-se-gps-gen2-2024-40mm-starlight-aluminium-starlight_GI7hVK2.webp"
+          },
+          {
+            "name": "Smart saat Apple Watch SE GPS Gen.2 (2024), 44mm Midnight Aluminium Case with Midnight Sport Band ML (MXEK3QI/A)",
+            "slug": "apple-watch-se-44mm-midnight-aluminium-case-with-midnight-sport-band-ml-218603",
+            "price": 869.99,
+            "discount": "180",
+            "perMonth": {
+              "month": 6,
+              "price": 115
+            },
+            "image": "https://media.bakuelectronics.az/media/inventImages/smart-saat-apple-watch-se-gps-gen2-44mm-midnight-aluminium-case-with-midni_rE8883D.webp"
+          }
+        ],
+        "video_consulting_widget": {
+          "text": "Müraciətiniz gün ərzində 10:00-dan, 18:00-a qədər cavablandırılacaq."
+        },
+        "process_time": 0.23816609382629395,
+        "qr_code": "data:image/png;base64,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"
+      }
+    },
+    "logo": "https://media.bakuelectronics.az/media/logo/74-x-74-Q-logo.png",
+    "__lang": "az",
+    "__namespaces": {
+      "translation": {
+        "top5products": "Top 5 məhsul",
+        "productofweek": "Həftənin ulduzları!",
+        "bestsellers": "Ən çox satılanlar",
+        "specialoffersBig": "Şərtlər indi daha da sadələşdi!",
+        "specialoffersSmall": "Ramazana özəl təkliflər",
+        "latestnews": "Bloq və xəbərlər",
+        "more": "Daha çox",
+        "less": "Daha az",
+        "readMore": "Daha çox oxu",
+        "readLess": "Daha az oxu",
+        "Seedetails": "Ətraflı bax",
+        "details": "Ətraflı ",
+        "favoritesTitle": "Sevimlilərim",
+        "compareTitle": "Müqayisə et",
+        "parameters": "Parametrlər",
+        "differences": "Fərqləri göstər",
+        "minute": "dəqiqə",
+        "hour": "saat",
+        "day": "gün",
+        "all": "Hamısı",
+        "discount": "Hamısı",
+        "homepage": "Ana səhifə",
+        "Subcategory": "Alt kateqoriyalar",
+        "Category": "Kateqoriyalar",
+        "Mostviewedproducts": "Ən çox baxılan məhsullar",
+        "Trend": "Trend",
+        "recentviews": "Son baxdıqlarınız",
+        "viewall": "Hamısını gör",
+        "BonusCustomerCard": "Müştəri kartı",
+        "Dontmiss": "Yeniliklərdən ilk sən xəbərdar ol!",
+        "E-mail": "E-poçt",
+        "Subscribe": "Abunə ol",
+        "customers": "Alıcılara",
+        "mostViewed": "Популярные товары",
+        "paymentsystem": "Aylıq ödəniş",
+        "deliveryandpayment": "Çatdırılma və ödəniş",
+        "service": "Servis mərkəzləri",
+        "search": "Məhsul axtar...",
+        "searchSelect": "Axtar...",
+        "installments": "Nisyə alış",
+        "giftcards": "Hədiyyə kartları",
+        "info": "Məlumat",
+        "company": "Şirkət",
+        "blog": "Bloq",
+        "AboutUs": "Şirkət haqqında",
+        "ContactUs": "Bizimlə əlaqə",
+        "Corporatewebsite": "Korporativ satışlar",
+        "stores": "Mağazalar",
+        "seeMap": "Xəritədə bax",
+        "seeList": "Listə bax",
+        "Aboutus": "Haqqımızda məlumat",
+        "About": "Haqqımızda",
+        "Vacancies": "Karyera portalı",
+        "BlogAndNews": "Bloq və xəbərlər",
+        "News": "Xəbərlər",
+        "CashbackAndCustomerCard": "Müştəri kartı",
+        "WarrantyConditions": "Zәmanәt",
+        "Followsocialmedia": "Bizi sosial mediada izləyin:",
+        "Paymentmethods": "Təhlükəsiz alış-veriş:",
+        "Campaigns": "Kampaniyalar",
+        "campaign": "Kampaniya",
+        "campaignEnded": "Kampaniya başa çatıb",
+        "CampaignsPageTitle1": "Məhsullar",
+        "CampaignsPageTitle2": "Kampaniyada iştirak edən məhsullar",
+        "monthlyPayment": "Aylıq ödəniş",
+        "totalPrice": "Qiymət",
+        "Services": "Xidmətlər",
+        "Other": "Digər",
+        "Help": "Kömək",
+        "homepageLink": "Ana səhifə",
+        "Privacy": "Məxfilik siyasəti",
+        "Termsandconditions": "Şərtlər və qaydalar",
+        "Forgotpassword": "Şifrəni unutmusan?",
+        "Login": "Daxil ol",
+        "Noaccount?": "Hesabınız yoxdur?",
+        "Signup": "Qeydiyyatdan keçin",
+        "haveanaccount": "Hazırda hesabınız var?",
+        "Enteremailaddress": "E-mail daxil edin",
+        "Enterpassword": "Şifrəni daxil edin.",
+        "Verificationcode": "Təsdiq kodu",
+        "Changepassword": "Şifrəni dəyiş",
+        "EnterFirstandLastName": "Ad və soyad tələb olunur.",
+        "EmailDemanded": "E-mail tələb olunur.",
+        "passwordDemanded": "Şifrə tələb olunur.",
+        "Sendverificationcode": "Təsdiq kodu göndər",
+        "FirstandLastName": "Ad və soyad",
+        "Emailaddress": "E-mail",
+        "Password": "Şifrə",
+        "createaccount": "Hesab yaradın",
+        "Cart": "Səbət ",
+        "Overview": "Ümumi baxış",
+        "Number": "ədəd",
+        "Total": "Cəmi",
+        "Promocode": "Promokod ...",
+        "Shippingdetails": "Çatdırılma məlumatları",
+        "Deliverytoaddress": "Ünvana çatdırılma",
+        "Deliverytomultipleaddresses": "Ayrı ayrı ünvanlara çatdırılma",
+        "Pickupfromstore": "Mağazadan təhvil alınma",
+        "Order": "Sifariş et",
+        "Selectpayment": "Ödəniş növünü seçin",
+        "Addanothershippingaddress": "Digər çatdırılma ünvanı əlavə et",
+        "Addanotheraddress": "Digər ünvan əlavə et",
+        "Proceedtopayment": "Ödənişə keç",
+        "cancelAction": "Ləğv et",
+        "Addaddress": "ÜNVAN ƏLAVƏ ET",
+        "note": "Qeyd: Bir neçə ödəmə növündən istifadə etmək istəyirsinizsə, uyğun ödəmə növlərinin seçili olduğundan əmin olun.",
+        "Clicktoselect": "Seçmək üçün kliklə",
+        "Completeorder": "Sifarişi tamamla",
+        "Totalnumberofproducts": "Ümumi məhsul sayı",
+        "Totaldiscount": "Ümumi endirim",
+        "brands": "Brendlər",
+        "recentlyWatched": "Ən son baxdıqlarım",
+        "addresses": "Ünvanlarım",
+        "bonuses": "Bonuslarım",
+        "personalInformation": "Şəxsi məlumatlarım",
+        "apply": "Müraciət et",
+        "exit": "Çıxış",
+        "banner": "Banner",
+        "review": "rəy",
+        "onlineOrderOnly": "Yalnız onlayn sifariş",
+        "productCode": "Məhsul kodu",
+        "monthShort": "ay",
+        "goToCart": "Səbətə keç",
+        "addToCart": "Səbətə əlavə et",
+        "addToCartShort": "Səbətə at",
+        "outOfStock": "Stokda yoxdur",
+        "emailFormatError": "Email formatı səhvdir",
+        "emailRequired": "Email daxil edin",
+        "buyEasy": "Arxayın al",
+        "copyright": "Bütün hüquqlar qorunur.",
+        "catalog": "Kataloq",
+        "myBasket": "Səbətim",
+        "piece": "ədəd",
+        "emptyBasket": "Səbətdə məhsulunuz yoxdur.",
+        "completeOrderButton": "Sifarişi tamamla",
+        "navigationTitle": "Sayt üzrə naviqasiya",
+        "activeContracts": "Aktiv müqavilələr",
+        "otherLinks": "Digər linklər",
+        "alertLogo": "Xəbərdarlıq",
+        "goBack": "Geriyə",
+        "pageNotFound": "OOPSS!!! SƏHİFƏ TAPILMADI",
+        "everyonesFavorite": "Bu məhsullar hər kəsin sevimlisidir!",
+        "productAdvantages": "Məhsul üstünlükləri",
+        "cashback": "keşbek",
+        "cashbackInfo": "Keşbek müştəri kartı ilə əldə edilir, nağd və hissəli ödənişlərdə keçərlidir.",
+        "productOutOfStock": "Məhsul stokda yoxdur",
+        "buyProduct": "Məhsulu al",
+        "oneClickBuy": "Bir kliklə al",
+        "buyOneClick": "Bir kliklə sifariş et",
+        "fastOrder": "Sürətli sifariş",
+        "payInInstallments": "Hissə-hissə ödə",
+        "payInstallments": "Hissə-hissə ödə",
+        "notifyWhenAvailable": "Gələndə xəbər et",
+        "share": "Paylaş",
+        "oneClickOrder": "Bir kliklə sifariş et",
+        "notifyWhenBack": "Gələndə xəbər edək",
+        "buyWithProduct": "Məhsulun yanında al",
+        "added": "Əlavə edildi",
+        "buyTogether": "Birlikdə al",
+        "aboutProduct": "Məhsul haqqında",
+        "productAbout": "Məhsul haqqında",
+        "clickToView": "Baxmaq üçün kliklə",
+        "clickToMinimize": "Kiçiltmək üçün kliklə",
+        "features": "Xüsusiyyətlər",
+        "brand": "Brend",
+        "reviews": "Rəylər",
+        "moreReviews": "Daha çox rəy",
+        "leaveReview": "Rəyini bildir",
+        "haveQuestion": "Sualınız var?",
+        "callAndAsk": "Zəng edin soruşun",
+        "callToAsk": "Zəng edin soruşun",
+        "call": "Zəng et",
+        "productReviews": "Məhsul rəyləri",
+        "similarProducts": "Oxşar məhsullar",
+        "youWillLikeThese": "Bunları da bəyənəcəksən!",
+        "youWillLikeTheseToo": "Bunları da bəyənəcəksən!",
+        "checkAgain": "Bu məhsullara yenidən göz at!",
+        "lookAgainAtTheseProducts": "Bu məhsullara yenidən göz at!",
+        "linkCopiedMessage": "Link kopyalanıb və paylaşmağa hazırdır.",
+        "favoritesEmpty": "Sevimlilər boşdur",
+        "noFavorites": "Sizin hal-hazırda sevimliləriniz yoxdur.",
+        "goToHomeForProducts": "Məhsullara baxmaq üçün ana səhifəyə keçid edə bilərsiniz.",
+        "viewProductsHomepage": "Məhsullara baxmaq üçün ana səhifəyə keçid edə bilərsiniz.",
+        "noComparison": "Sizin hal-hazırda müqayisəniz yoxdur.",
+        "compareEmpty": "Sizin hal-hazırda müqayisəniz yoxdur.",
+        "estimatedDelivery": "Təxmini çatdırılma vaxtı",
+        "upTo3Days": "1-3 günədək",
+        "orderSuccess": "Sifarişiniz uğurla tamamlandı.",
+        "orderFailed": "Sifarişiniz uğursuz oldu.",
+        "enterPhone": "Telefon daxil edin",
+        "phoneFormatError": "Telefon formatı səhvdir",
+        "requestSent": "Sorğunuz göndərildi.",
+        "requestSentContact": "Sorğunuz göndərildi. Sizinlə tezliklə əlaqə saxlanılacaq.",
+        "requestFailed": "Sorğunuz göndərilmədi",
+        "writeReview": "Rəy yazın",
+        "rateProduct": "Məhsulu qiymətləndirin",
+        "reviewSent": "Rəy göndərildi",
+        "reviewNotSent": "Rəy göndərilmədi",
+        "loginToReview": "Rəy bildirmək üçün daxil olun",
+        "yourThoughts": "Fikirləriniz...",
+        "address": "Ünvan",
+        "workingHours": "İş saatı",
+        "serviceNote": "Siyahıda qeyd olunmayan ərazilərdə xidmət üçün, vahid çağrı mərkəzimizə müraciət edə bilərsiniz",
+        "noResults": "Nəticə tapılmadı",
+        "enterCityDistrict": "Şəhər / Rayon daxil edin",
+        "cityDistrict": "Şəhər / Rayon",
+        "exactAddress": "Dəqiq ünvan",
+        "selectFromMap": "Ünvanı xəritədən seçin",
+        "videoConsulting": "Video Konsultasiya",
+        "interestedProduct": "Maraqlandığınız məhsul",
+        "paymentStatus": "Ödəniş statusu",
+        "subscriptionConfirmed": "Abunəlik təsdiq edildi",
+        "subscriptionError": "Abunəlik təsdiqlənərkən xəta baş verdi",
+        "confirmSubscription": "Abunəlik təsdiq",
+        "buyOnCredit": "Nisyə al",
+        "period": "Müddət",
+        "initialPayment": "İlkin ödəniş",
+        "finalPrice": "Yekun qiymət",
+        "noteLabel": "Qeyd",
+        "serviceFeeNote": "Sifarişin rəsmiləşdirilməsi zamanı 10%-ə qədər xidmət haqqı əlavə oluna bilər",
+        "deliveryHome": "Ünvana çatdırılma",
+        "deliveryToSeparateAddresses": "Ayrı-ayrı ünvanlara çatdır",
+        "pickupFromStore": "Mağazadan götürəcəm",
+        "enterFirstName": "Ad daxil edin",
+        "enterLastName": "Soyad daxil edin",
+        "productCount": "Məhsul",
+        "quantity": "Miqdar",
+        "price": "Qiymət",
+        "purchaseStatus": "Satınalma statusu",
+        "paymentType": "Ödəniş növü",
+        "store": "Mağaza",
+        "orderDate": "Sifariş tarixi",
+        "bonus": "Bonus",
+        "firstName": "Ad",
+        "lastName": "Soyad",
+        "betaMessage": "Hazırda vebsayt beta rejimindədir. Hər hansı xətanı aşkar etdiyinizdə bizə məlumat verməyiniz xahiş olunur. Əlaqə üçün 143-ə zəng edə və ya",
+        "emailSuffix": "e-mail ünvanına yaza bilərsiniz.",
+        "noProducts": "Məhsul yoxdur",
+        "toHomepage": "Ana səhifəyə",
+        "toCatalog": "Kataloqa keçid",
+        "categories": "Kateqoriyalar",
+        "warranty": "Zəmanət",
+        "privacyPolicy": "Məxfilik siyasəti",
+        "orderNotCompleted": "Sifariş tamamlanmadı",
+        "fillAllFields": "Məlumatları tam daxil edin",
+        "userNotFound": "İstifadəçi tapılmadı",
+        "requestNotConfirmedOrRejected": "Sorğu təsdiq edilmədi və ya rədd edildi",
+        "insufficientBankBalance": "Bank hesabında kifayət qədər məbləğ yoxdur",
+        "creditLimitInsufficient": "Mövcud kredit limiti taksit məbləğindən azdır",
+        "requestNotConfirmedByClient": "Sorğu müştəri tərəfindən təsdiq edilmədi",
+        "requestNotConfirmedByStore": "Sorğu mağaza tərəfindən təsdiq edilmədi",
+        "enterFinCode": "FİN kod daxil edin",
+        "enterBirthDate": "Doğum tarixi daxil edin",
+        "errorOccurred": "Xəta baş verdi",
+        "serverNotResponding": "Server cavab vermir. Bir qədər sonra yenidən cəhd edin.",
+        "activeCreditContracts": "Aktiv nisyə satış müqavilələriniz",
+        "activeCreditContractsDesc": "Burada bütün aktiv nisyə satış müqavilələrinizi izləyə və detallarını asanlıqla yoxlaya bilərsiniz.",
+        "birthDate": "Doğum tarixi",
+        "continue": "Davam et",
+        "finCodeInfoText": "Daxil etdiyiniz FİN kod və doğum tarixi yalnız sistemimizdə mövcud olan aktiv nisyə satış müqavilələrinizi göstərmək məqsədilə istifadə olunur.",
+        "contractNumber": "Müqavilə nömrəsi",
+        "contractDate": "Müqavilə tarixi",
+        "amountToPay": "Ödəniləcək məbləğ",
+        "remainingDebt": "Qalıq borc",
+        "dear": "Hörmətli",
+        "makePayment": "Ödəniş et",
+        "dontMissOpportunities": "Fürsətləri qaçırma!",
+        "searchResults": "Üzrə axtarış nəticəsi",
+        "popular": "Populyar",
+        "discountSort": "Endirim",
+        "cheapToExpensive": "Ucuzdan bahaya",
+        "expensiveToCheap": "Bahadan ucuza",
+        "filters": "Filterlər",
+        "sorting": "Sıralama",
+        "checkout": "Sifariş",
+        "completeCheckout": "Sifarişi rəsmiləşdir",
+        "personalInfo": "Şəxsi məlumatlar",
+        "deliveryType": "Çatdırılma növü",
+        "homeAddress": "Ev ünvanım",
+        "workAddress": "İş ünvanım",
+        "paymentMethod": "Ödəniş üsulu",
+        "addMoreForCredit": "Nisyə alış üçün səbətinə {{amount}} ₼ dəyərində məhsul əlavə et.",
+        "delivery": "Çatdırılma",
+        "totalAmount": "Cəmi məbləğ",
+        "checkoutInfoText": "Hörmətli müştəri, xahiş edirik tələb olunan bütün məlumatları tam və doğru formada doldurasınız. * Saytımızda onlayn alın, 30 gün müddətində istər dəyişin, istər geri qaytarın. Xüsusi şərtlər ilə saytımızdan daha ətraflı tanış ola bilərsiniz. Məlumatları bizimlə paylaşmaqla siz şirkətimizin onlayn alış şərtlərinə razılıq verirsiniz. Hər hansı sualınız yaranarsa, 143 nömrəsi ilə əlaqə saxlayın. Bizi seçdiyinizə görə təşəkkür edirik!",
+        "confirmLeobankRequest": "Leobank tətbiqindən sorğunu təsdiq edin.",
+        "cashPaymentNote": "Sifarişinizi aldıqda ödənişi nağd və ya bank kartı ilə ödəyə bilərsiniz.",
+        "installmentCardInfo": "Taksit kart məlumatları",
+        "creditInfo": "Nisyə alıram məlumatları",
+        "monthly": "Aylıq",
+        "selectProduct": "Məhsulu seç",
+        "selectAddress": "Ünvanı seç",
+        "orAddNewAddress": "Və ya yeni ünvan əlavə et",
+        "passwordInput": "Şifrəni daxil edin",
+        "wrongPassword": "Şifrə yanlışdır",
+        "enterCode": "Kodu daxil edin",
+        "wrongCode": "Kod yanlışdır",
+        "registrationConfirm": "Qeydiyyat təsdiq",
+        "checkEmailForCode": "Təsdiq kodunu daxil etmək üçün maili yoxlayın.",
+        "resetPassword": "Şifrəni yenilə",
+        "emailNotFound": "Email tapılmadı",
+        "confirmNewPassword": "Yeni şifrəni təkrar daxil edin",
+        "passwordMismatch": "Şifrə uyğun deyil",
+        "homepageNav": "Ana səhifə",
+        "bakuElectronicsHistory": "BakuElectronics tarixi",
+        "customerCard": "Müştəri kartı",
+        "cartIcon": "Səbət",
+        "cartEmpty": "Sizin hal-hazırda səbətdə məhsulunuz yoxdur.",
+        "myCart": "Səbətim",
+        "proceedToCheckout": "Sifarişi rəsmiləşdir",
+        "subscribeToNews": "Heç bir yeniliyi qaçırmamaq üçün abunə olun",
+        "enterEmail": "Email daxil edin",
+        "emailLabel": "E-poçt",
+        "newsTitle": "Xəbərlər",
+        "latestNews": "Ən son yeniliklər",
+        "view": "Bax",
+        "orderStatusSuccess": "Uğurlu sifariş",
+        "orderStatusError": "Xəta",
+        "productItem": "Məhsul",
+        "productQuantity": "Məhsul miqdarı",
+        "mostSearched": "Ən çox axtarılan",
+        "products": "Məhsullar",
+        "searchBanner": "Axtarış banneri",
+        "stayUpdated": "Ən son yeniliklərdən xəbərdar ol!",
+        "goToNews": "Xəbərlərə keçid et",
+        "seeAllNews": "Bütün xəbərləri gör",
+        "campaignWidget": "Kampaniya widget",
+        "campaignBanner": "Kampaniya Banner",
+        "dontMissUpdates": "Heç bir yeniliyi qaçırma!",
+        "subscribeToChannel": "Kanala abunə ol",
+        "ourYoutubeChannel": "Youtube kanalımız",
+        "techReviewsSlogan": "Texno icmallarla düzgün seçim et!",
+        "goToChannel": "Kanalımıza keçid et",
+        "myAccount": "Şəxsi kabinetim",
+        "appeal": "Müraciət",
+        "submitAppeal": "Müraciət et",
+        "enterFullName": "Ad və soyadı daxil edin",
+        "enterPhoneNumber": "Telefon nömrəsini daxil edin",
+        "emailFormatIncorrect": "Email formatı doğru deyil",
+        "emailPlaceholder": "Maili daxil edin",
+        "enterAppeal": "Müraciəti daxil edin",
+        "appealSent": "Müraciət göndərildi",
+        "appealNotSent": "Müraciət göndərilmədi",
+        "appealType": "Müraciət növü",
+        "fullName": "Ad, soyad",
+        "phoneNumber": "Telefon nömrəsi",
+        "yourAppeal": "Müraciətiniz",
+        "send": "Göndər",
+        "cancel": "Ləğv et",
+        "myPersonalInfo": "Şəxsi məlumatlarım",
+        "enterFullPhoneNumber": "Telefon nömrəsini tam daxil edin",
+        "personalInfoUpdated": "Şəxsi məlumatlar redaktə olundu",
+        "personalInfoNotUpdated": "Şəxsi məlumatlar redaktə olunmadı",
+        "edit": "Redaktə",
+        "nameAndSurname": "Ad və soyad",
+        "phone": "Telefon",
+        "finCode": "Fin kod",
+        "editInfo": "Redaktə et",
+        "passwordReset": "Şifrəni dəyişdir",
+        "enterOldPassword": "Köhnə şifrəni daxil edin",
+        "enterNewPassword": "Yeni şifrəni daxil edin",
+        "repeatPassword": "Şifrəni təkrar et",
+        "passwordChanged": "Şifrə dəyişdirildi",
+        "oldPassword": "Köhnə şifrə",
+        "newPassword": "Yeni şifrə",
+        "save": "Yadda saxla",
+        "myOrders": "Sifarişlərim",
+        "noOrdersYet": "Sizin hal-hazırda mövcud sifarişiniz yoxdur.",
+        "orderNumber": "Sifariş №",
+        "totalPayment": "Toplam ödəniş",
+        "lastViewed": "Ən son baxdıqlarım",
+        "noLastViewedYet": "Sizin hal-hazırda ən son baxdıqlarınız yoxdur.",
+        "noViewedProductsYet": "Sizin hal-hazırda baxdığınız məhsul yoxdur.",
+        "myAddresses": "Ünvanlarım",
+        "addNew": "+ Əlavə et",
+        "noAddressesYet": "Sizin hal-hazırda mövcud ünvanlarınız yoxdur.",
+        "selectAddressType": "Adres tipini seçin",
+        "enterAddress": "Adresi daxil edin",
+        "enterCity": "Şəhəri daxil edin",
+        "enterCityRegion": "Şəhər / Rayon daxil edin",
+        "cityRegion": "Şəhər / Rayon",
+        "enterExactAddress": "Dəqiq ünvan daxil edin",
+        "exactAddressPlaceholder": "Dəqiq ünvan",
+        "enterAddressType": "Ünvan növü daxil edin",
+        "addressType": "Ünvan növü",
+        "home": "Ev",
+        "work": "İş",
+        "other": "Digər",
+        "selectAddressFromMap": "Ünvanı xəritədən seçin",
+        "confirmAddress": "Ünvanı təsdiq et",
+        "addAddress": "Ünvan əlavə et",
+        "addressNotAdded": "Ünvan əlavə edilə bilmədi",
+        "editAddress": "Ünvana düzəliş et",
+        "addressNotEdited": "Ünvana düzəliş edilə bilmədi",
+        "notRegisteredPageAccess": "Qeydiyyatınız olmadığı üçün bu səhifəyə daxil ola bilmirsiz.",
+        "returnToHomepage": "Ana səhifəyə qayıtmaq üçün düyməyə sıxın",
+        "logout": "Çıxış",
+        "ordersPageTitle": "Sifarişlərim | Baku Electronics",
+        "lastViewedPageTitle": "Ən son baxdıqlarım | Baku Electronics",
+        "addressesPageTitle": "Ünvanlarım | Baku Electronics",
+        "addAddressPageTitle": "Ünvan əlavə et | Baku Electronics",
+        "editAddressPageTitle": "Ünvana düzəliş et | Baku Electronics",
+        "personalInfoPageTitle": "Şəxsi məlumatlarım | Baku Electronics",
+        "changePasswordPageTitle": "Şifrəni dəyişdir | Baku Electronics",
+        "appealPageTitle": "Müraciət | Baku Electronics",
+        "colors": "Rənglər",
+        "resetFilters": "Seçilənləri sil",
+        "resetSelection": "Seçimi sıfırla",
+        "noResultsFound": "Nəticə tapılmadı.",
+        "compare": "Müqayisə et",
+        "showAll": "Hamısını göstər",
+        "modalClose": "Bağla",
+        "notCreditFoundCheckout": "Seçilmiş məhsullar üzrə vahid taksit ödəniş imkanı mövcud deyil. Davam etmək üçün hər bir məhsul üzrə ayrıca sifariş verməyiniz xahiş olunur.",
+        "addresslabel": "ünvan",
+        "aboutUsDescription": "Haqqımızda məlumat",
+        "deliveryToAddress": "Ünvana çatdırılma",
+        "cartIcont": "Səbət",
+        "newsGeneral": "Ən son yeniliklər",
+        "adNewAddressBtn": "Ünvan əlavə et",
+        "compaignEndDateNote": "Endirim {{date}} tarixinədək qüvvədədir. Kampaniya müddətində qiymət dəyişikliyi ola bilər.",
+        "priceOnlyOnline": "Onlayn üçün xüsusi qiymət",
+        "partnersTitle": "Partnyorlar",
+        "moreInformationBtn": "Ətraflı məlumat",
+        "Noaccount": "Hesabınız yoxdur?",
+        "appModalTitle": "Mobil tətbiq",
+        "appModalSubTitle": "Daha rahat istifadə üçün mobil tətbiqi yükləyin",
+        "appModalAppStoreBtnTitle": "App Store-dan yüklə",
+        "appModalPlayStoreBtnTitle": "Play Store-dan yüklə",
+        "appModalThenBtn": "Daha sonra",
+        "appBannerTitle": "Elektronika alış-verişi",
+        "appBannerBrandName": "Baku Electronics",
+        "appBannerDownloadBtn": "Tətbiqi Yüklə"
+      }
+    },
+    "__N_SSP": true
+  },
+  "page": "/mehsul/[id]",
+  "query": {
+    "id": "telefon-iphone-air-512gb-light-gold-222776"
+  },
+  "buildId": "KgB79oWUD3YKw-zBh32eu",
+  "isFallback": false,
+  "gssp": true,
+  "appGip": true,
+  "locale": "az",
+  "locales": [
+    "az",
+    "en",
+    "ru"
+  ],
+  "defaultLocale": "az",
+  "scriptLoader": []
+}
