@@ -48,11 +48,11 @@ export function PriceChart({ history }: PriceChartProps) {
       <h3 className="mb-3 mt-0 text-[1.06rem] font-semibold text-slate-900">Qiymət tarixi</h3>
       <div className="rounded-xl border border-slate-200 bg-gradient-to-b from-white to-slate-50 p-3" aria-label="Qiymət tarixçəsi qrafiki">
         <svg viewBox="0 0 100 100" preserveAspectRatio="none" role="img" className="block h-[220px] w-full">
-          <polyline points={svgPoints} className="fill-none stroke-teal-700 stroke-[2.5] [stroke-linecap:round] [stroke-linejoin:round]" />
+          <polyline points={svgPoints} className="fill-none stroke-[rgb(255,79,8)] stroke-[2.5] [stroke-linecap:round] [stroke-linejoin:round]" />
           {points.map((point, index) => {
             const x = (index / Math.max(1, points.length - 1)) * 100;
             const y = 100 - ((point.price - min) / range) * 100;
-            return <circle key={`${point.date}-${point.price}`} cx={x} cy={y} r="1.8" className="fill-teal-700" />;
+            return <circle key={`${point.date}-${point.price}`} cx={x} cy={y} r="1.8" className="fill-[rgb(50,144,241)]" />;
           })}
         </svg>
         <div className="mt-1 flex items-center justify-between text-xs text-slate-500">

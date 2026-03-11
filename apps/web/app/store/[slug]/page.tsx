@@ -45,7 +45,7 @@ export default async function StorePage({ params, searchParams }: Props) {
       <p className="muted">Son yenilənmə: {data.store.last_scraped_at ?? "-"}</p>
       <p className="muted">Aktiv məhsul sayı: {data.total}</p>
 
-      <div className="grid">
+      <div className="catalog-grid">
         {data.items.map((item) => (
           <Link key={item.slug} href={`/product/${item.slug}`} className="card">
             {item.image_url ? (

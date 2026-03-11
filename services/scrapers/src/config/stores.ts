@@ -1,10 +1,33 @@
 import type { StoreScraper } from "../core/types";
+import { bakcellShopScraper } from "../stores/bakcellShop";
 import { bakuElectronicsScraper } from "../stores/bakuElectronics";
+import { barkodElectronicsScraper } from "../stores/barkodElectronics";
+import { birmarketScraper } from "../stores/birmarket";
+import { bytelecomScraper } from "../stores/bytelecom";
+import { elitOptimalScraper } from "../stores/elitOptimal";
 import { irshadScraper } from "../stores/irshad";
 import { kontaktHomeScraper } from "../stores/kontaktHome";
+import { megamartScraper } from "../stores/megamart";
+import { smartElectronicsScraper } from "../stores/smartelectronics";
+import { smartonScraper } from "../stores/smarton";
 import { solitonScraper } from "../stores/soliton";
+import { wtScraper } from "../stores/wt";
 
-const ALL_STORES: StoreScraper[] = [kontaktHomeScraper, irshadScraper, bakuElectronicsScraper, solitonScraper];
+const ALL_STORES: StoreScraper[] = [
+  bakcellShopScraper,
+  bakuElectronicsScraper,
+  barkodElectronicsScraper,
+  birmarketScraper,
+  bytelecomScraper,
+  elitOptimalScraper,
+  irshadScraper,
+  kontaktHomeScraper,
+  megamartScraper,
+  smartElectronicsScraper,
+  smartonScraper,
+  solitonScraper,
+  wtScraper
+];
 
 function applyExplicitFilter(stores: StoreScraper[]): StoreScraper[] {
   const only = process.env.SCRAPER_ONLY_STORES?.split(",")

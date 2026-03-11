@@ -12,6 +12,12 @@ interface UpsertStats {
 interface StaleStoreProductRow {
   id: number;
   current_price_azn: number | null;
+  product_id: number;
+}
+
+interface ProductCategoryRow {
+  id: number;
+  category_id: number | null;
 }
 
 interface ExistingMappingRow {
@@ -22,6 +28,71 @@ interface ExistingMappingRow {
   in_stock: boolean;
   price_updated_at: string | null;
 }
+
+interface ExistingProductMetaRow {
+  id?: number;
+  category_id?: number | null;
+  brand?: string | null;
+  model?: string | null;
+  image_url?: string | null;
+  specs?: Record<string, unknown> | null;
+}
+
+interface ProductAliasRow {
+  product_id: number;
+  fingerprint: string;
+  confidence: number | null;
+}
+
+interface AliasFingerprint {
+  fingerprint: string;
+  confidence: number;
+  type: "exact" | "relaxed" | "model";
+}
+
+const RELAXED_DROP_TOKENS = new Set([
+  "black",
+  "white",
+  "blue",
+  "red",
+  "green",
+  "gray",
+  "grey",
+  "silver",
+  "gold",
+  "pink",
+  "purple",
+  "violet",
+  "yellow",
+  "orange",
+  "midnight",
+  "starlight",
+  "titanium",
+  "desert",
+  "velvet",
+  "ocean",
+  "forest",
+  "space",
+  "graphite",
+  "moonlight",
+  "sunrise",
+  "cyan",
+  "teal",
+  "color",
+  "colour",
+  "colourway",
+  "colorr",
+  "qara",
+  "ag",
+  "goy",
+  "qirmizi",
+  "yasil",
+  "boz",
+  "gumus",
+  "qizili",
+  "benovseyi",
+  "bej"
+]);
 
 function hasPhoneSpecValue(item: NormalizedItem): boolean {
   if (!item.phoneSpecs) return false;
@@ -39,10 +110,171 @@ function hasRawSpecs(item: NormalizedItem): boolean {
   return Boolean(item.rawSpecs && Object.keys(item.rawSpecs).length > 0);
 }
 
+function buildRelaxedTitle(normalizedTitle: string): string {
+  const text = normalizedTitle
+    .toLowerCase()
+    .replace(/\u0259/g, "e")
+    .replace(/\u0131/g, "i")
+    .replace(/\u00f6/g, "o")
+    .replace(/\u00fc/g, "u")
+    .replace(/\u015f/g, "s")
+    .replace(/\u00e7/g, "c")
+    .replace(/\u011f/g, "g")
+    .replace(/[^\p{L}\p{N}\s]/gu, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  const tokens = text.split(" ").filter(Boolean);
+  const kept = tokens.filter((token) => !RELAXED_DROP_TOKENS.has(token));
+  return kept.join(" ").trim();
+}
+
+function buildAliasFingerprints(item: NormalizedItem): AliasFingerprint[] {
+  const categoryPart = item.categorySlug ?? "uncategorized";
+  const brandPart = item.brand?.trim().toLowerCase() || "unknown";
+  const exactTitle = item.normalizedTitle.trim().toLowerCase();
+  const relaxedTitle = buildRelaxedTitle(item.normalizedTitle);
+  const modelPart = item.model?.trim().toLowerCase() || "";
+
+  const exact = `${categoryPart}|${brandPart}|${exactTitle}`.trim();
+  const relaxed = `${categoryPart}|${brandPart}|${relaxedTitle || exactTitle}`.trim();
+  const model = modelPart ? `${categoryPart}|${brandPart}|model|${modelPart}`.trim() : "";
+
+  const rows: AliasFingerprint[] = [
+    { fingerprint: exact, confidence: 1.0, type: "exact" }
+  ];
+
+  if (relaxed && relaxed !== exact) {
+    rows.push({ fingerprint: relaxed, confidence: 0.9, type: "relaxed" });
+  }
+
+  if (model && model !== exact && model !== relaxed) {
+    rows.push({ fingerprint: model, confidence: 0.97, type: "model" });
+  }
+
+  return rows;
+}
+
+async function syncProductMeta(productId: number, item: NormalizedItem, categoryId: number | null): Promise<void> {
+  const supabase = getSupabaseClient();
+  const { data: existingProduct } = await supabase
+    .from("products")
+    .select("brand,model,image_url,specs,category_id")
+    .eq("id", productId)
+    .maybeSingle();
+
+  const patch: Record<string, unknown> = {
+    canonical_name: item.canonicalName,
+    normalized_name: item.normalizedTitle,
+    brand: item.brand ?? existingProduct?.brand ?? null,
+    model: item.model ?? existingProduct?.model ?? null,
+    image_url: item.imageUrl ?? existingProduct?.image_url ?? null,
+    specs: hasRawSpecs(item) ? item.rawSpecs : existingProduct?.specs ?? {}
+  };
+
+  // Never clear category if scraper couldn't infer one for this row.
+  if (categoryId !== null) {
+    patch.category_id = categoryId;
+  }
+
+  await supabase.from("products").update(patch).eq("id", productId);
+}
+
+async function upsertProductAliases(storeId: number, productId: number, item: NormalizedItem): Promise<void> {
+  const supabase = getSupabaseClient();
+  const fingerprints = buildAliasFingerprints(item);
+  const rows = fingerprints.map((entry) => ({
+    store_id: storeId,
+    product_id: productId,
+    raw_title: item.canonicalName,
+    normalized_title: item.normalizedTitle,
+    fingerprint: entry.fingerprint,
+    confidence: entry.confidence
+  }));
+
+  const { error } = await supabase.from("product_aliases").upsert(rows, { onConflict: "store_id,fingerprint" });
+  if (error) {
+    logger.warn({ error, storeId, productId }, "Failed to upsert product aliases");
+  }
+}
+
+async function resolveProductIdByAlias(item: NormalizedItem, categoryId: number | null): Promise<number | null> {
+  const supabase = getSupabaseClient();
+  const fingerprints = buildAliasFingerprints(item);
+  const exactFingerprints = new Set(
+    fingerprints.filter((row) => row.type === "exact").map((row) => row.fingerprint)
+  );
+  const relaxedFingerprints = new Set(
+    fingerprints.filter((row) => row.type === "relaxed").map((row) => row.fingerprint)
+  );
+  const modelFingerprints = new Set(
+    fingerprints.filter((row) => row.type === "model").map((row) => row.fingerprint)
+  );
+  const fingerprintList = [...new Set(fingerprints.map((row) => row.fingerprint))];
+
+  const { data: aliasRows, error: aliasError } = await supabase
+    .from("product_aliases")
+    .select("product_id,fingerprint,confidence")
+    .in("fingerprint", fingerprintList)
+    .limit(100);
+
+  const aliasData = (aliasRows ?? []) as ProductAliasRow[];
+  if (aliasError || aliasData.length === 0) {
+    return null;
+  }
+
+  const productIds = [...new Set(aliasData.map((row: ProductAliasRow) => row.product_id))];
+  const { data: products, error: productError } = await supabase
+    .from("products")
+    .select("id,category_id,brand,is_active")
+    .in("id", productIds);
+
+  if (productError || !products?.length) {
+    return null;
+  }
+
+  const brand = item.brand?.trim().toLowerCase() ?? "";
+  const productsById = new Map<number, { id: number; category_id: number | null; brand: string | null; is_active: boolean }>();
+  for (const product of products as Array<{ id: number; category_id: number | null; brand: string | null; is_active: boolean }>) {
+    productsById.set(product.id, product);
+  }
+
+  let best: { productId: number; score: number } | null = null;
+  for (const alias of aliasData) {
+    const product = productsById.get(alias.product_id);
+    if (!product || product.is_active === false) continue;
+
+    let score = 0;
+    if (categoryId !== null) {
+      if (product.category_id === categoryId) score += 100;
+      else if (product.category_id === null) score -= 20;
+      else score -= 40;
+    }
+
+    const productBrand = product.brand?.trim().toLowerCase() ?? "";
+    if (brand && brand === productBrand) score += 40;
+
+    if (modelFingerprints.has(alias.fingerprint)) score += 35;
+    else if (exactFingerprints.has(alias.fingerprint)) score += 25;
+    else if (relaxedFingerprints.has(alias.fingerprint)) score += 15;
+
+    const confidence = Number(alias.confidence ?? 0);
+    score += Number.isFinite(confidence) ? Math.round(confidence * 10) : 0;
+
+    if (!best || score > best.score) {
+      best = { productId: product.id, score };
+    }
+  }
+
+  if (!best) return null;
+  return best.productId;
+}
+
 async function upsertPhoneSpecs(productId: number, item: NormalizedItem): Promise<void> {
   if (!item.phoneSpecs || !hasPhoneSpecValue(item)) return;
 
   const specs = item.phoneSpecs;
+  const supabase = getSupabaseClient();
   const payload: Record<string, unknown> = {
     product_id: productId,
     last_parsed_at: item.scrapedAt
@@ -87,7 +319,6 @@ async function upsertPhoneSpecs(productId: number, item: NormalizedItem): Promis
   if (specs.specsConfidence != null) payload.specs_confidence = specs.specsConfidence;
   if (specs.rawSpecs && Object.keys(specs.rawSpecs).length > 0) payload.raw_specs = specs.rawSpecs;
 
-  const supabase = getSupabaseClient();
   const { error } = await supabase.from("phone_specs").upsert(payload, { onConflict: "product_id" });
   if (error) {
     logger.warn({ error, productId, payload }, "Failed to upsert phone_specs");
@@ -111,22 +342,7 @@ async function resolveProductId(item: NormalizedItem, categoryId: number | null)
   }
 
   if (existingProduct?.id) {
-    const patch: Record<string, unknown> = {
-      canonical_name: item.canonicalName,
-      normalized_name: item.normalizedTitle,
-      brand: item.brand ?? existingProduct.brand ?? null,
-      model: item.model ?? existingProduct.model ?? null,
-      image_url: item.imageUrl ?? existingProduct.image_url ?? null,
-      specs: hasRawSpecs(item) ? item.rawSpecs : existingProduct.specs ?? {},
-      // Keep product category in sync with the latest normalized item.
-      // This also allows clearing previously wrong categories (set to null).
-      category_id: categoryId
-    };
-
-    await supabase
-      .from("products")
-      .update(patch)
-      .eq("id", existingProduct.id);
+    await syncProductMeta(existingProduct.id, item, categoryId);
     return existingProduct.id;
   }
 
@@ -175,11 +391,15 @@ async function resolveProductId(item: NormalizedItem, categoryId: number | null)
   throw lastError ?? new Error(`Failed to resolve product for fingerprint=${item.fingerprint}`);
 }
 
-async function deactivateStaleListings(storeId: number, runStartedAt: string): Promise<number> {
+async function deactivateStaleListings(
+  storeId: number,
+  runStartedAt: string,
+  scopeCategoryIds: number[]
+): Promise<number> {
   const supabase = getSupabaseClient();
   const { data: staleRows, error: staleFetchError } = await supabase
     .from("store_products")
-    .select("id,current_price_azn")
+    .select("id,current_price_azn,product_id")
     .eq("store_id", storeId)
     .eq("is_active", true)
     .lt("last_seen_at", runStartedAt);
@@ -188,7 +408,45 @@ async function deactivateStaleListings(storeId: number, runStartedAt: string): P
     return 0;
   }
 
-  const staleIds = (staleRows as StaleStoreProductRow[]).map((row: StaleStoreProductRow) => row.id);
+  const rows = staleRows as StaleStoreProductRow[];
+  let scopedRows = rows;
+
+  if (scopeCategoryIds.length > 0) {
+    const productIds = [...new Set(rows.map((row) => row.product_id))];
+    if (!productIds.length) {
+      return 0;
+    }
+
+    const { data: productRows, error: productFetchError } = await supabase
+      .from("products")
+      .select("id,category_id")
+      .in("id", productIds);
+
+    if (productFetchError || !productRows?.length) {
+      logger.warn(
+        { error: productFetchError, storeId, scopeCategoryIds },
+        "Failed to scope stale listing deactivation by category"
+      );
+      return 0;
+    }
+
+    const categoryByProductId = new Map<number, number | null>();
+    for (const row of productRows as ProductCategoryRow[]) {
+      categoryByProductId.set(row.id, row.category_id ?? null);
+    }
+
+    scopedRows = rows.filter((row) => {
+      const categoryId = categoryByProductId.get(row.product_id) ?? null;
+      if (categoryId === null) return false;
+      return scopeCategoryIds.includes(categoryId);
+    });
+  }
+
+  if (!scopedRows.length) {
+    return 0;
+  }
+
+  const staleIds = scopedRows.map((row: StaleStoreProductRow) => row.id);
 
   const { error: staleUpdateError } = await supabase
     .from("store_products")
@@ -204,7 +462,7 @@ async function deactivateStaleListings(storeId: number, runStartedAt: string): P
   }
 
   await supabase.from("price_logs").insert(
-    (staleRows as StaleStoreProductRow[]).map((row: StaleStoreProductRow) => ({
+    scopedRows.map((row: StaleStoreProductRow) => ({
       store_product_id: row.id,
       event_type: "listing_inactive",
       old_price_azn: row.current_price_azn ?? null,
@@ -213,7 +471,7 @@ async function deactivateStaleListings(storeId: number, runStartedAt: string): P
     }))
   );
 
-  return staleRows.length;
+  return scopedRows.length;
 }
 
 export async function upsertNormalizedItems(
@@ -260,9 +518,13 @@ export async function upsertNormalizedItems(
   let insertedPrices = 0;
   let changedPrices = 0;
   let deactivatedListings = 0;
+  const categoryIdsInRun = new Set<number>();
 
   for (const item of items) {
     const categoryId = item.categorySlug ? (categoryBySlug.get(item.categorySlug) ?? null) : null;
+    if (categoryId != null) {
+      categoryIdsInRun.add(categoryId);
+    }
     const { data: existingMapping } = await supabase
       .from("store_products")
       .select("id,product_id,current_price_azn,previous_price_azn,in_stock,price_updated_at")
@@ -270,41 +532,31 @@ export async function upsertNormalizedItems(
       .eq("listing_key", item.listingKey)
       .maybeSingle();
 
+    const mapping = existingMapping as ExistingMappingRow | null;
     let productId: number;
-    if ((existingMapping as ExistingMappingRow | null)?.product_id) {
-      productId = (existingMapping as ExistingMappingRow).product_id;
-      const { data: existingProduct } = await supabase
-        .from("products")
-        .select("brand,model,image_url,specs")
-        .eq("id", productId)
-        .maybeSingle();
-
-      const patch: Record<string, unknown> = {
-        canonical_name: item.canonicalName,
-        normalized_name: item.normalizedTitle,
-        brand: item.brand ?? existingProduct?.brand ?? null,
-        model: item.model ?? existingProduct?.model ?? null,
-        image_url: item.imageUrl ?? existingProduct?.image_url ?? null,
-        specs: hasRawSpecs(item) ? item.rawSpecs : existingProduct?.specs ?? {},
-        category_id: categoryId
-      };
-
-      await supabase.from("products").update(patch).eq("id", productId);
-    } else {
-      try {
+    try {
+      const aliasResolvedId = await resolveProductIdByAlias(item, categoryId);
+      if (aliasResolvedId) {
+        productId = aliasResolvedId;
+        await syncProductMeta(productId, item, categoryId);
+      } else if (mapping?.product_id) {
+        const fingerprintResolvedId = await resolveProductId(item, categoryId);
+        productId = fingerprintResolvedId || mapping.product_id;
+      } else {
         productId = await resolveProductId(item, categoryId);
-      } catch (productError) {
-        logger.error({ error: productError, item }, "Failed to resolve product");
-        continue;
       }
+    } catch (productError) {
+      logger.error({ error: productError, item }, "Failed to resolve product");
+      continue;
     }
+
+    await upsertProductAliases(store.id, productId, item);
 
     if (item.categorySlug === "telefonlar") {
       await upsertPhoneSpecs(productId, item);
     }
 
-    const isNew = !existingMapping;
-    const mapping = existingMapping as ExistingMappingRow | null;
+    const isNew = !mapping;
     const priceChanged = !isNew && Number(mapping?.current_price_azn) !== Number(item.priceAzn);
     const prevPrice = priceChanged ? mapping?.current_price_azn ?? null : mapping?.previous_price_azn ?? null;
     const updatedAt = isNew || priceChanged ? item.scrapedAt : mapping?.price_updated_at ?? null;
@@ -364,7 +616,7 @@ export async function upsertNormalizedItems(
     }
   }
 
-  deactivatedListings = await deactivateStaleListings(store.id, options.runStartedAt);
+  deactivatedListings = await deactivateStaleListings(store.id, options.runStartedAt, [...categoryIdsInRun]);
 
   await supabase
     .from("stores")
@@ -373,3 +625,4 @@ export async function upsertNormalizedItems(
 
   return { insertedPrices, changedPrices, deactivatedListings };
 }
+

@@ -40,9 +40,9 @@ function getCategoryUrls(): string[] {
 function inferCategorySlug(url: string): string | null {
   const value = url.toLowerCase();
   if (value.includes("mobil-telefon") || value.includes("smartfon")) return "telefonlar";
+  if (value.includes("planset") || value.includes("tablet")) return "plansetler";
   if (value.includes("notbuk")) return "noutbuklar";
   if (value.includes("televizor") || value.includes("/tv-")) return "televizorlar";
-  if (value.includes("planset") || value.includes("tablet")) return "plansetler";
   return null;
 }
 

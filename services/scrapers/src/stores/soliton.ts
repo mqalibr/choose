@@ -6,11 +6,34 @@ import type { RawStoreItem, StoreScraper } from "../core/types";
 const STORE_SLUG = "soliton";
 const BASE_URL = "https://soliton.az";
 const DEFAULT_CATEGORY_URL = "https://soliton.az/az/telefon/mobil-telefonlar/";
+const DEFAULT_CATEGORY_URLS = [
+  "https://soliton.az/az/telefon/mobil-telefonlar/",
+  "https://soliton.az/az/komputer-ve-aksesuarlar/plansetler/",
+  "https://soliton.az/az/tv-ve-audio/televizorlar/"
+];
 
 function toPositiveInt(input: string | undefined, fallback: number): number {
   const value = Number(input);
   if (!Number.isFinite(value) || value < 1) return fallback;
   return Math.floor(value);
+}
+
+function parseCsv(input: string | undefined): string[] {
+  if (!input?.trim()) return [];
+  return input
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+function getCategoryUrls(): string[] {
+  const many = parseCsv(process.env.SOLITON_CATEGORY_URLS);
+  if (many.length) return many;
+
+  const single = process.env.SOLITON_CATEGORY_URL?.trim();
+  if (single) return [single];
+
+  return DEFAULT_CATEGORY_URLS;
 }
 
 function sanitizeSpecText(value: string): string {
@@ -290,8 +313,7 @@ async function enrichItemsWithDetailSpecs(
 export const solitonScraper: StoreScraper = {
   storeSlug: STORE_SLUG,
   async scrape(ctx) {
-    const categoryUrl = process.env.SOLITON_CATEGORY_URL?.trim() || DEFAULT_CATEGORY_URL;
-    const categorySlug = inferCategorySlug(categoryUrl);
+    const categoryUrls = getCategoryUrls();
     const maxPages = toPositiveInt(process.env.SOLITON_MAX_PAGES_PER_CATEGORY, 6);
     const challengeRetries = toPositiveInt(process.env.SOLITON_CHALLENGE_RETRIES, 2);
     const detailEnabled = process.env.SOLITON_FETCH_DETAIL_SPECS !== "false";
@@ -302,81 +324,31 @@ export const solitonScraper: StoreScraper = {
       Number.isFinite(maxItems) && maxItems <= 400 ? maxItems : 120
     );
 
-    const page = await ctx.pageFactory();
-    await page.setExtraHTTPHeaders({
-      "accept-language": "az,en-US;q=0.9,en;q=0.8"
-    });
-
     const byListingKey = new Map<string, RawStoreItem>();
+    const categoryErrors: string[] = [];
     let detailItemsProcessed = 0;
 
-    try {
-      await loadCategory(page, categoryUrl);
+    for (const categoryUrl of categoryUrls) {
+      const page = await ctx.pageFactory();
+      await page.setExtraHTTPHeaders({
+        "accept-language": "az,en-US;q=0.9,en;q=0.8"
+      });
 
-      const productsPerPage = await page
-        .locator("#products-list")
-        .first()
-        .getAttribute("data-products-per-page")
-        .then((v) => toPositiveInt(v ?? "", 15));
-      const sectionId = await page.locator("#products-list").first().getAttribute("data-section-id");
-      const brandId = await page.locator("#products-list").first().getAttribute("data-brand-id");
+      try {
+        const categorySlug = inferCategorySlug(categoryUrl);
+        await loadCategory(page, categoryUrl);
 
-      const initialItems = await parseItemsFromCurrentDom(page, new Date().toISOString(), categorySlug);
-      if (detailEnabled && detailItemsProcessed < maxDetailItems) {
-        detailItemsProcessed = await enrichItemsWithDetailSpecs(ctx, initialItems, {
-          challengeRetries,
-          maxDetailItems,
-          detailDelayMs,
-          detailItemsProcessed
-        });
-      }
+        const productsPerPage = await page
+          .locator("#products-list")
+          .first()
+          .getAttribute("data-products-per-page")
+          .then((v) => toPositiveInt(v ?? "", 15));
+        const sectionId = await page.locator("#products-list").first().getAttribute("data-section-id");
+        const brandId = await page.locator("#products-list").first().getAttribute("data-brand-id");
 
-      for (const item of initialItems) {
-        item.productUrl = normalizeUrl(item.productUrl);
-        item.imageUrl = item.imageUrl?.trim() ? normalizeUrl(item.imageUrl) : null;
-        byListingKey.set(item.listingKey, item);
-        if (byListingKey.size >= maxItems) return [...byListingKey.values()].slice(0, maxItems);
-      }
-
-      if (!sectionId) {
-        throw new Error("Soliton category metadata (section-id) not found");
-      }
-
-      let offset = byListingKey.size;
-      for (let pageNo = 2; pageNo <= maxPages; pageNo += 1) {
-        const response = await page.request.post(`${BASE_URL}/ajax-requests.php`, {
-          form: {
-            action: "loadProducts",
-            sectionID: sectionId,
-            brandID: brandId ?? "0",
-            offset: String(offset),
-            limit: String(productsPerPage),
-            sorting: ""
-          },
-          timeout: 90_000
-        });
-
-        if (!response.ok()) {
-          throw new Error(`Soliton ajax load failed with status=${response.status()}`);
-        }
-
-        const payload = (await response.json()) as {
-          html?: string;
-          loadedCount?: number;
-          hasMore?: boolean;
-        };
-        if (!payload?.html?.trim()) break;
-
-        const batchItems = await parseItemsFromHtmlSnippet(
-          page,
-          payload.html,
-          new Date().toISOString(),
-          categorySlug
-        );
-        if (!batchItems.length) break;
-
+        const initialItems = await parseItemsFromCurrentDom(page, new Date().toISOString(), categorySlug);
         if (detailEnabled && detailItemsProcessed < maxDetailItems) {
-          detailItemsProcessed = await enrichItemsWithDetailSpecs(ctx, batchItems, {
+          detailItemsProcessed = await enrichItemsWithDetailSpecs(ctx, initialItems, {
             challengeRetries,
             maxDetailItems,
             detailDelayMs,
@@ -384,25 +356,91 @@ export const solitonScraper: StoreScraper = {
           });
         }
 
-        for (const item of batchItems) {
+        for (const item of initialItems) {
           item.productUrl = normalizeUrl(item.productUrl);
           item.imageUrl = item.imageUrl?.trim() ? normalizeUrl(item.imageUrl) : null;
           byListingKey.set(item.listingKey, item);
           if (byListingKey.size >= maxItems) return [...byListingKey.values()].slice(0, maxItems);
         }
 
-        offset = typeof payload.loadedCount === "number" && payload.loadedCount > offset ? payload.loadedCount : byListingKey.size;
-        if (!payload.hasMore) break;
-        await page.waitForTimeout(900);
-      }
+        if (!sectionId) {
+          throw new Error("Soliton category metadata (section-id) not found");
+        }
 
-      const result = [...byListingKey.values()].slice(0, maxItems);
-      if (!result.length) {
-        throw new Error("No products fetched from Soliton");
+        let offset = initialItems.length;
+        for (let pageNo = 2; pageNo <= maxPages; pageNo += 1) {
+          const response = await page.request.post(`${BASE_URL}/ajax-requests.php`, {
+            form: {
+              action: "loadProducts",
+              sectionID: sectionId,
+              brandID: brandId ?? "0",
+              offset: String(offset),
+              limit: String(productsPerPage),
+              sorting: ""
+            },
+            timeout: 90_000
+          });
+
+          if (!response.ok()) {
+            throw new Error(`Soliton ajax load failed with status=${response.status()}`);
+          }
+
+          const payload = (await response.json()) as {
+            html?: string;
+            loadedCount?: number;
+            hasMore?: boolean;
+          };
+          if (!payload?.html?.trim()) break;
+
+          const batchItems = await parseItemsFromHtmlSnippet(
+            page,
+            payload.html,
+            new Date().toISOString(),
+            categorySlug
+          );
+          if (!batchItems.length) break;
+
+          if (detailEnabled && detailItemsProcessed < maxDetailItems) {
+            detailItemsProcessed = await enrichItemsWithDetailSpecs(ctx, batchItems, {
+              challengeRetries,
+              maxDetailItems,
+              detailDelayMs,
+              detailItemsProcessed
+            });
+          }
+
+          for (const item of batchItems) {
+            item.productUrl = normalizeUrl(item.productUrl);
+            item.imageUrl = item.imageUrl?.trim() ? normalizeUrl(item.imageUrl) : null;
+            byListingKey.set(item.listingKey, item);
+            if (byListingKey.size >= maxItems) return [...byListingKey.values()].slice(0, maxItems);
+          }
+
+          offset =
+            typeof payload.loadedCount === "number" && payload.loadedCount > offset
+              ? payload.loadedCount
+              : offset + batchItems.length;
+          if (!payload.hasMore) break;
+          await page.waitForTimeout(900);
+        }
+      } catch (error) {
+        const message = (error as Error).message;
+        categoryErrors.push(`${categoryUrl} :: ${message}`);
+        logger.warn({ store: STORE_SLUG, categoryUrl, error: message }, "Skipping Soliton category due scrape error");
+      } finally {
+        await page.close();
       }
-      return result;
-    } finally {
-      await page.close();
     }
+
+    const result = [...byListingKey.values()].slice(0, maxItems);
+    if (!result.length) {
+      throw new Error(categoryErrors[0] ?? "No products fetched from Soliton");
+    }
+
+    if (categoryErrors.length) {
+      logger.warn({ store: STORE_SLUG, categoryErrors }, "Soliton scraper finished with partial category failures");
+    }
+
+    return result;
   }
 };

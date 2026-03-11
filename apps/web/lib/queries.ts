@@ -17,6 +17,13 @@ interface QueryErrorLike {
   message?: string;
 }
 
+interface CategoryOfferPreviewRow {
+  product_id: number;
+  store_name: string;
+  store_slug: string;
+  current_price_azn: number;
+}
+
 const SEARCH_SORT: Record<SearchSort, { column: string; asc: boolean }> = {
   relevance: { column: "last_price_at", asc: false },
   price_asc: { column: "min_price_azn", asc: true },
@@ -84,6 +91,12 @@ function normalizeBrandSlug(brand?: string): string | undefined {
 function normalizeStoreSlug(store?: string): string | undefined {
   if (!store?.trim()) return undefined;
   return store.trim().toLowerCase();
+}
+
+function normalizePriceValue(value?: number): number | undefined {
+  if (typeof value !== "number") return undefined;
+  if (!Number.isFinite(value)) return undefined;
+  return value >= 0 ? value : undefined;
 }
 
 function isMissingRelationError(error: QueryErrorLike | null): boolean {
@@ -292,6 +305,8 @@ export async function getCategoryBySlug(input: {
   minOffers?: number;
   brand?: string;
   store?: string;
+  minPrice?: number;
+  maxPrice?: number;
 }) {
   const supabase = getSupabaseServerClient();
   const page = Math.max(1, input.page ?? 1);
@@ -299,6 +314,8 @@ export async function getCategoryBySlug(input: {
   const minOffers = clampMinOffers(input.minOffers);
   const brandSlug = normalizeBrandSlug(input.brand);
   const storeSlug = normalizeStoreSlug(input.store);
+  const minPrice = normalizePriceValue(input.minPrice);
+  const maxPrice = normalizePriceValue(input.maxPrice);
   const from = (page - 1) * limit;
   const to = from + limit - 1;
   const sort = input.sort ?? "price_asc";
@@ -341,6 +358,14 @@ export async function getCategoryBySlug(input: {
     itemsQuery = itemsQuery.eq("brand_slug", brandSlug);
   }
 
+  if (minPrice !== undefined) {
+    itemsQuery = itemsQuery.gte("min_price_azn", minPrice);
+  }
+
+  if (maxPrice !== undefined) {
+    itemsQuery = itemsQuery.lte("min_price_azn", maxPrice);
+  }
+
   if (storeSlug && scopedProductIds) {
     if (scopedProductIds.length === 0) {
       return {
@@ -362,12 +387,45 @@ export async function getCategoryBySlug(input: {
 
   if (itemsError) throw itemsError;
 
+  const baseItems = items ?? [];
+  const productIds = baseItems.map((item) => item.id);
+  const offerMap = new Map<number, Array<{ store_name: string; store_slug: string; price_azn: number }>>();
+
+  if (productIds.length > 0) {
+    const { data: offerRows, error: offerRowsError } = await supabase
+      .from("v_product_offers")
+      .select("product_id,store_name,store_slug,current_price_azn")
+      .in("product_id", productIds)
+      .order("current_price_azn", { ascending: true })
+      .returns<CategoryOfferPreviewRow[]>();
+
+    if (offerRowsError) throw offerRowsError;
+
+    for (const row of offerRows ?? []) {
+      const current = offerMap.get(row.product_id) ?? [];
+      const hasStore = current.some((item) => item.store_slug === row.store_slug);
+      if (!hasStore) {
+        current.push({
+          store_name: row.store_name,
+          store_slug: row.store_slug,
+          price_azn: Number(row.current_price_azn)
+        });
+      }
+      offerMap.set(row.product_id, current);
+    }
+  }
+
+  const itemsWithOffers = baseItems.map((item) => ({
+    ...item,
+    top_offers: (offerMap.get(item.id) ?? []).slice(0, 3)
+  }));
+
   return {
     category,
     page,
     limit,
     total: count ?? 0,
-    items: items ?? [],
+    items: itemsWithOffers,
     brands: brands ?? [],
     stores: stores ?? [],
     selectedBrand: brandSlug ?? null,

@@ -21,6 +21,64 @@ function inferInStock(raw?: string | null): boolean {
 type CategorySlug = "telefonlar" | "televizorlar" | "noutbuklar" | "plansetler";
 type TitleClass = CategorySlug | "other" | "unknown";
 
+const PHONE_COLOR_TOKENS = new Set([
+  "black",
+  "white",
+  "blue",
+  "red",
+  "green",
+  "gray",
+  "grey",
+  "silver",
+  "gold",
+  "pink",
+  "purple",
+  "yellow",
+  "orange",
+  "midnight",
+  "starlight",
+  "titanium",
+  "desert",
+  "velvet",
+  "ocean",
+  "forest",
+  "space",
+  "graphite",
+  "moonlight",
+  "sunrise",
+  "cyan",
+  "teal",
+  "qara",
+  "ag",
+  "goy",
+  "qirmizi",
+  "yasil",
+  "boz",
+  "gumus",
+  "qizili",
+  "benovseyi",
+  "bej"
+]);
+
+const PHONE_NOISE_TOKENS = new Set([
+  "new",
+  "global",
+  "version",
+  "official",
+  "smartfon",
+  "telefon",
+  "phone",
+  "model",
+  "dual",
+  "single",
+  "sim",
+  "nano",
+  "esim",
+  "nfc",
+  "lte",
+  "5g"
+]);
+
 function normalizeForCategory(raw: string): string {
   return raw
     .toLowerCase()
@@ -34,6 +92,85 @@ function normalizeForCategory(raw: string): string {
     .replace(/[^\w\s]/g, " ")
     .replace(/\s+/g, " ")
     .trim();
+}
+
+function toAsciiLower(raw: string): string {
+  return raw
+    .toLowerCase()
+    .replace(/\u0259/g, "e")
+    .replace(/\u0131/g, "i")
+    .replace(/\u00f6/g, "o")
+    .replace(/\u00fc/g, "u")
+    .replace(/\u015f/g, "s")
+    .replace(/\u00e7/g, "c")
+    .replace(/\u011f/g, "g");
+}
+
+function parsePhoneMemoryFromTitle(title: string): { ramGb: number | null; storageGb: number | null } {
+  const ascii = toAsciiLower(title);
+  const pair = ascii.match(/\b(\d{1,2})\s*(?:gb)?\s*\/\s*(\d{2,4})\s*gb\b/);
+  if (pair) {
+    return {
+      ramGb: Number(pair[1]),
+      storageGb: Number(pair[2])
+    };
+  }
+
+  const allGb = [...ascii.matchAll(/\b(\d{1,4})\s*gb\b/g)]
+    .map((m) => Number(m[1]))
+    .filter((n) => Number.isFinite(n));
+
+  const ramGb = allGb.find((n) => n >= 1 && n <= 24) ?? null;
+  const storageGb = allGb.find((n) => n >= 32) ?? null;
+
+  return { ramGb, storageGb };
+}
+
+function derivePhoneModelKey(
+  normalizedTitle: string,
+  brand: string | null,
+  phoneSpecs: NormalizedItem["phoneSpecs"]
+): string | null {
+  const ascii = toAsciiLower(normalizedTitle)
+    .replace(/\([^)]*\)/g, " ")
+    .replace(/\bsm-[a-z0-9-]+\b/g, " ")
+    .replace(/\b\d{1,2}\s*\/\s*\d{2,4}\s*gb\b/g, " ")
+    .replace(/\b\d{1,4}\s*gb\b/g, " ")
+    .replace(/[^\w\s]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  const tokens = ascii
+    .split(" ")
+    .filter(Boolean)
+    .filter((token) => !PHONE_COLOR_TOKENS.has(token))
+    .filter((token) => !PHONE_NOISE_TOKENS.has(token));
+
+  if (!tokens.length) {
+    return null;
+  }
+
+  const normalizedBrand = brand?.trim().toLowerCase() ?? null;
+  if (normalizedBrand) {
+    while (tokens.length && tokens[0] === normalizedBrand) {
+      tokens.shift();
+    }
+  }
+
+  const modelBase = tokens.slice(0, 6).join(" ").trim();
+  if (!modelBase) {
+    return null;
+  }
+
+  const titleMemory = parsePhoneMemoryFromTitle(normalizedTitle);
+  const ramGb = phoneSpecs?.ramGb ?? titleMemory.ramGb ?? null;
+  const storageGb = phoneSpecs?.storageGb ?? titleMemory.storageGb ?? null;
+
+  const parts = [modelBase];
+  if (ramGb) parts.push(`${ramGb}gb`);
+  if (storageGb) parts.push(`${storageGb}gb`);
+
+  return parts.join(" ").trim();
 }
 
 function includesAny(text: string, keywords: string[]): boolean {
@@ -268,10 +405,12 @@ export function normalizeItems(rawItems: RawStoreItem[]): NormalizedItem[] {
               rawSpecs: raw.specsRaw ?? null
             })
           : null;
+      const model = categorySlug === "telefonlar" ? derivePhoneModelKey(normalizedTitle, brand, phoneSpecs) : null;
+      const fingerprintTitle = categorySlug === "telefonlar" ? model ?? normalizedTitle : normalizedTitle;
       const fingerprint = buildProductFingerprint({
         brand,
-        model: null,
-        title: normalizedTitle
+        model,
+        title: fingerprintTitle
       });
 
       return {
@@ -281,7 +420,7 @@ export function normalizeItems(rawItems: RawStoreItem[]): NormalizedItem[] {
         normalizedTitle,
         fingerprint,
         brand,
-        model: null,
+        model,
         productSlug: slugify(normalizedTitle),
         productUrl: raw.productUrl,
         imageUrl: raw.imageUrl?.trim() ? raw.imageUrl.trim() : null,

@@ -15,7 +15,7 @@ export function SimilarProducts({ products }: SimilarProductsProps) {
           <a
             key={`${item.name}-${item.link}`}
             href={item.link}
-            className="snap-start rounded-xl border border-slate-200 bg-white p-2.5 text-slate-900 flex flex-col gap-2"
+            className="snap-start rounded-xl border border-slate-200 bg-white p-2.5 text-slate-900 flex flex-col gap-2 hover:border-[rgba(50,144,241,0.45)]"
           >
             <img
               src={item.image}

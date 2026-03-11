@@ -5,7 +5,7 @@ import type { RawStoreItem, StoreScraper } from "../core/types";
 
 const STORE_SLUG = "baku-electronics";
 const BASE_URL = "https://www.bakuelectronics.az";
-const DEFAULT_SEARCH_TERMS = [
+const DEFAULT_PHONE_SEARCH_TERMS = [
   "telefon",
   "smartfon",
   "iphone",
@@ -23,7 +23,29 @@ const DEFAULT_SEARCH_TERMS = [
   "motorola"
 ];
 
-type BakuCategory = "telefonlar" | "plansetler";
+const DEFAULT_TABLET_SEARCH_TERMS = [
+  "planset",
+  "tablet",
+  "ipad",
+  "galaxy tab",
+  "xiaomi pad",
+  "redmi pad",
+  "honor pad",
+  "lenovo tab",
+  "matepad"
+];
+
+const DEFAULT_TV_SEARCH_TERMS = [
+  "televizor",
+  "tv",
+  "smart tv",
+  "oled tv",
+  "qled tv",
+  "uhd tv",
+  "android tv"
+];
+
+type BakuCategory = "telefonlar" | "plansetler" | "televizorlar";
 
 interface BakuSearchItem {
   name?: string;
@@ -39,16 +61,39 @@ function toPositiveInt(input: string | undefined, fallback: number): number {
   return Math.floor(value);
 }
 
-function getSearchTerms(): string[] {
-  const raw = process.env.BAKU_SEARCH_TERMS;
-  if (!raw?.trim()) return DEFAULT_SEARCH_TERMS;
-
-  const terms = raw
+function parseCsv(input: string | undefined): string[] {
+  if (!input?.trim()) return [];
+  return input
     .split(",")
     .map((item) => item.trim())
     .filter(Boolean);
+}
 
-  return terms.length ? terms : DEFAULT_SEARCH_TERMS;
+function getCategorySlugs(): BakuCategory[] {
+  const multi = parseCsv(process.env.BAKU_CATEGORY_SLUGS);
+  if (multi.length) {
+    return [...new Set(multi.map((item) => normalizeCategorySlug(item)))];
+  }
+  return [normalizeCategorySlug(process.env.BAKU_CATEGORY_SLUG)];
+}
+
+function getSearchTerms(category: BakuCategory): string[] {
+  const scopedEnv =
+    category === "plansetler"
+      ? process.env.BAKU_TABLET_SEARCH_TERMS
+      : category === "televizorlar"
+        ? process.env.BAKU_TV_SEARCH_TERMS
+        : process.env.BAKU_PHONE_SEARCH_TERMS;
+
+  const scopedTerms = parseCsv(scopedEnv);
+  if (scopedTerms.length) return scopedTerms;
+
+  const sharedTerms = parseCsv(process.env.BAKU_SEARCH_TERMS);
+  if (sharedTerms.length) return sharedTerms;
+
+  if (category === "plansetler") return DEFAULT_TABLET_SEARCH_TERMS;
+  if (category === "televizorlar") return DEFAULT_TV_SEARCH_TERMS;
+  return DEFAULT_PHONE_SEARCH_TERMS;
 }
 
 function sanitizeSpecText(value: string): string {
@@ -60,6 +105,15 @@ function sanitizeSpecText(value: string): string {
 
 function normalizeCategorySlug(input: string | undefined): BakuCategory {
   const value = (input ?? "").trim().toLowerCase();
+  if (
+    value === "televizorlar" ||
+    value === "televizor" ||
+    value === "tv" ||
+    value === "television" ||
+    value === "tvs"
+  ) {
+    return "televizorlar";
+  }
   if (value === "plansetler" || value === "tabletler" || value === "tablets" || value === "tablet") {
     return "plansetler";
   }
@@ -84,16 +138,42 @@ function isLikelyPhone(item: { slug?: string; name?: string }): boolean {
 function isLikelyTablet(item: { slug?: string; name?: string }): boolean {
   const slug = (item.slug ?? "").toLowerCase();
   const name = (item.name ?? "").toLowerCase();
-  const text = `${slug} ${name}`;
+  const nameAscii = name.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  const text = `${slug} ${nameAscii}`;
 
   const hasTabletToken =
-    /\b(ipad|tablet|tab|pad|planset|planset|galaxy tab|redmi pad|xiaomi pad|honor pad|lenovo tab)\b/.test(text) ||
+    /\b(ipad|tablet|tab|pad|planset|galaxy tab|redmi pad|xiaomi pad|honor pad|lenovo tab|matepad)\b/.test(text) ||
     slug.startsWith("planset-") ||
     slug.startsWith("tablet-");
+  const hasPrimaryTabletPrefix = /^(planset|planshet|tablet)\b/.test(nameAscii.trim());
+  const hasStrongTabletModel = /\b(ipad|galaxy tab|redmi pad|xiaomi pad|honor pad|lenovo tab|matepad)\b/.test(text);
+  const hasStoragePattern = /\b(32|64|128|256|512|1024)\s*gb\b/.test(text);
   const hasAccessoryToken =
-    /\b(case|cover|qab|stylus|pen|klaviatura|keyboard|adapter|kabel|cable|stand)\b/.test(text);
+    /\b(case|cover|qab|stylus|pen|pencil|klaviatura|keyboard|adapter|kabel|cable|stand|sling|canta|cantasi|cexol|folio|bag|glass|protector|film|writing|drawing|qrafik)\b/.test(
+      text
+    );
 
-  return hasTabletToken && !hasAccessoryToken;
+  const isTabletDevice =
+    (hasStrongTabletModel && (hasStoragePattern || hasPrimaryTabletPrefix)) ||
+    (hasPrimaryTabletPrefix && hasStoragePattern) ||
+    (hasTabletToken && hasStoragePattern && !/\b(writing|egitim|saydam)\b/.test(text));
+
+  return isTabletDevice && !hasAccessoryToken;
+}
+
+function isLikelyTv(item: { slug?: string; name?: string }): boolean {
+  const slug = (item.slug ?? "").toLowerCase();
+  const name = (item.name ?? "").toLowerCase();
+  const text = `${slug} ${name}`;
+
+  const hasTvToken =
+    /\b(tv|televizor|television|smart tv|oled|qled|uhd|4k|8k|nanocell)\b/.test(text) ||
+    slug.startsWith("televizor-");
+  const hasSizeToken = /\b([2-9]\d)\s*(\"|inch)\b/.test(text);
+  const hasAccessoryToken =
+    /\b(kronshteyn|pult|remote|stand|kabel|adapter|anten|cihaz|box|qutu|tuner|speaker|soundbar)\b/.test(text);
+
+  return hasTvToken && !hasAccessoryToken && (hasSizeToken || /\b(oled|qled|uhd|smart tv|android tv)\b/.test(text));
 }
 
 function normalizeUrl(pathOrUrl: string): string {
@@ -231,8 +311,7 @@ async function enrichItemsWithDetailSpecs(
 export const bakuElectronicsScraper: StoreScraper = {
   storeSlug: STORE_SLUG,
   async scrape(ctx) {
-    const searchTerms = getSearchTerms();
-    const categorySlug = normalizeCategorySlug(process.env.BAKU_CATEGORY_SLUG);
+    const categorySlugs = getCategorySlugs();
     const maxPagesPerTerm = toPositiveInt(process.env.BAKU_MAX_PAGES_PER_TERM, 4);
     const detailEnabled = process.env.BAKU_FETCH_DETAIL_SPECS !== "false";
     const detailDelayMs = toPositiveInt(process.env.BAKU_DETAIL_DELAY_MS, 250);
@@ -251,53 +330,61 @@ export const bakuElectronicsScraper: StoreScraper = {
     let detailItemsProcessed = 0;
 
     try {
-      for (const term of searchTerms) {
-        for (let pageNo = 1; pageNo <= maxPagesPerTerm; pageNo += 1) {
-          await loadSearchPage(page, term, pageNo);
+      for (const categorySlug of categorySlugs) {
+        const searchTerms = getSearchTerms(categorySlug);
+        for (const term of searchTerms) {
+          for (let pageNo = 1; pageNo <= maxPagesPerTerm; pageNo += 1) {
+            await loadSearchPage(page, term, pageNo);
 
-          const searchPayload = await extractSearchItems(page);
-          const batch = (searchPayload.items ?? [])
-            .filter((item) => item.slug && item.name)
-            .filter((item) =>
-              categorySlug === "plansetler"
-                ? isLikelyTablet({ slug: item.slug, name: item.name })
-                : isLikelyPhone({ slug: item.slug, name: item.name })
-            )
-            .map<RawStoreItem>((item) => {
-              const slug = item.slug as string;
-              const price = Number(item.price ?? 0);
-              const inStock = Number(item.quantity ?? 0) > 0;
-              return {
-                listingKey: `/mehsul/${slug}`,
-                storeSlug: STORE_SLUG,
-                titleRaw: (item.name as string).trim(),
-                productUrl: normalizeUrl(`/mehsul/${slug}`),
-                imageUrl: item.image ? normalizeUrl(item.image) : null,
-                categorySlug,
-                priceRaw: String(price),
-                availabilityRaw: inStock ? "in_stock" : "out_of_stock",
-                scrapedAt: new Date().toISOString()
-              };
-            });
+            const searchPayload = await extractSearchItems(page);
+            const batch = (searchPayload.items ?? [])
+              .filter((item) => item.slug && item.name)
+              .filter((item) =>
+                categorySlug === "plansetler"
+                  ? isLikelyTablet({ slug: item.slug, name: item.name })
+                  : categorySlug === "televizorlar"
+                    ? isLikelyTv({ slug: item.slug, name: item.name })
+                    : isLikelyPhone({ slug: item.slug, name: item.name })
+              )
+              .map<RawStoreItem>((item) => {
+                const slug = item.slug as string;
+                const price = Number(item.price ?? 0);
+                const inStock = Number(item.quantity ?? 0) > 0;
+                return {
+                  listingKey: `/mehsul/${slug}`,
+                  storeSlug: STORE_SLUG,
+                  titleRaw: (item.name as string).trim(),
+                  productUrl: normalizeUrl(`/mehsul/${slug}`),
+                  imageUrl: item.image ? normalizeUrl(item.image) : null,
+                  categorySlug,
+                  priceRaw: String(price),
+                  availabilityRaw: inStock ? "in_stock" : "out_of_stock",
+                  scrapedAt: new Date().toISOString()
+                };
+              });
 
-          if (detailEnabled && detailItemsProcessed < maxDetailItems && batch.length) {
-            detailItemsProcessed = await enrichItemsWithDetailSpecs(ctx, batch, {
-              maxDetailItems,
-              detailDelayMs,
-              detailItemsProcessed
-            });
-          }
-
-          for (const row of batch) {
-            byListingKey.set(`${STORE_SLUG}|${row.listingKey}`, row);
-            if (byListingKey.size >= maxItems) {
-              return [...byListingKey.values()].slice(0, maxItems);
+            if (detailEnabled && detailItemsProcessed < maxDetailItems && batch.length) {
+              detailItemsProcessed = await enrichItemsWithDetailSpecs(ctx, batch, {
+                maxDetailItems,
+                detailDelayMs,
+                detailItemsProcessed
+              });
             }
-          }
 
-          const loadedTill = searchPayload.page * searchPayload.size;
-          if (!searchPayload.total || loadedTill >= searchPayload.total) {
-            break;
+            for (const row of batch) {
+              const mapKey = `${STORE_SLUG}|${row.listingKey}`;
+              if (!byListingKey.has(mapKey)) {
+                byListingKey.set(mapKey, row);
+              }
+              if (byListingKey.size >= maxItems) {
+                return [...byListingKey.values()].slice(0, maxItems);
+              }
+            }
+
+            const loadedTill = searchPayload.page * searchPayload.size;
+            if (!searchPayload.total || loadedTill >= searchPayload.total) {
+              break;
+            }
           }
         }
       }

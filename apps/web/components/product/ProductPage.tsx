@@ -190,7 +190,7 @@ export function ProductPage({ product }: ProductPageProps) {
           <button
             type="button"
             onClick={() => setShowAllSpecs((prev) => !prev)}
-            className="mt-3 inline-flex items-center rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-teal-700 hover:bg-teal-50"
+            className="mt-3 inline-flex items-center rounded-lg border border-[rgba(50,144,241,0.35)] bg-[rgba(50,144,241,0.08)] px-3 py-2 text-sm font-semibold text-[rgb(35,118,205)] hover:bg-[rgba(50,144,241,0.14)]"
           >
             {showAllSpecs ? "Daha az göstər" : `Daha çox göstər (${specRows.length - 10})`}
           </button>
@@ -224,23 +224,28 @@ export function ProductPage({ product }: ProductPageProps) {
                 const isInStock = offer.stock === "Stokda var";
 
                 return (
-                  <tr key={`${offer.store_name}-${offer.link}`} className={isCheapest ? "bg-emerald-50" : "bg-white"}>
+                  <tr
+                    key={`${offer.store_name}-${offer.link}`}
+                    className={isCheapest ? "bg-[rgba(50,144,241,0.08)]" : "bg-white"}
+                  >
                     <td className="border-b border-slate-200 px-3 py-3 font-semibold text-slate-900">{offer.store_name}</td>
                     <td className="border-b border-slate-200 px-3 py-3">
                       <strong className="text-slate-900">{offer.price} AZN</strong>
                       {isCheapest ? (
-                        <span className="ml-2 inline-flex items-center rounded-full border border-emerald-200 bg-emerald-100 px-2 py-0.5 text-xs font-semibold text-emerald-800">
+                        <span className="ml-2 inline-flex items-center rounded-full border border-[rgba(50,144,241,0.4)] bg-[rgba(50,144,241,0.15)] px-2 py-0.5 text-xs font-semibold text-[rgb(30,98,165)]">
                           Ən ucuz
                         </span>
                       ) : null}
                     </td>
-                    <td className={`border-b border-slate-200 px-3 py-3 font-semibold ${isInStock ? "text-emerald-700" : "text-slate-500"}`}>
+                    <td
+                      className={`border-b border-slate-200 px-3 py-3 font-semibold ${isInStock ? "text-[rgb(35,118,205)]" : "text-slate-500"}`}
+                    >
                       {offer.stock}
                     </td>
                     <td className="border-b border-slate-200 px-3 py-3">
                       {isInStock ? (
                         <a
-                          className="inline-flex min-h-10 min-w-[102px] items-center justify-center rounded-lg border border-transparent bg-teal-700 px-4 text-sm font-semibold text-white transition hover:bg-teal-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
+                          className="inline-flex min-h-10 min-w-[102px] items-center justify-center rounded-lg border border-transparent bg-[rgb(255,79,8)] px-4 text-sm font-semibold text-white transition hover:bg-[rgb(226,66,0)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[rgba(255,79,8,0.4)]"
                           href={offer.link}
                           target="_blank"
                           rel="noreferrer"
@@ -271,21 +276,21 @@ export function ProductPage({ product }: ProductPageProps) {
             return (
               <article
                 key={`${offer.store_name}-${offer.link}-mobile`}
-                className={`rounded-xl border p-3 ${isCheapest ? "border-emerald-300 bg-emerald-50" : "border-slate-200 bg-white"}`}
+                className={`rounded-xl border p-3 ${isCheapest ? "border-[rgba(50,144,241,0.45)] bg-[rgba(50,144,241,0.08)]" : "border-slate-200 bg-white"}`}
               >
                 <div className="flex items-center justify-between gap-2">
                   <strong className="text-slate-900">{offer.store_name}</strong>
                   {isCheapest ? (
-                    <span className="inline-flex items-center rounded-full border border-emerald-200 bg-emerald-100 px-2 py-0.5 text-xs font-semibold text-emerald-800">
+                    <span className="inline-flex items-center rounded-full border border-[rgba(50,144,241,0.4)] bg-[rgba(50,144,241,0.15)] px-2 py-0.5 text-xs font-semibold text-[rgb(30,98,165)]">
                       Ən ucuz
                     </span>
                   ) : null}
                 </div>
                 <p className="mb-1 mt-2 text-lg font-bold text-slate-900">{offer.price} AZN</p>
-                <p className={`mb-3 mt-0 text-sm font-semibold ${isInStock ? "text-emerald-700" : "text-slate-500"}`}>{offer.stock}</p>
+                <p className={`mb-3 mt-0 text-sm font-semibold ${isInStock ? "text-[rgb(35,118,205)]" : "text-slate-500"}`}>{offer.stock}</p>
                 {isInStock ? (
                   <a
-                    className="inline-flex min-h-10 min-w-[102px] items-center justify-center rounded-lg border border-transparent bg-teal-700 px-4 text-sm font-semibold text-white transition hover:bg-teal-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
+                    className="inline-flex min-h-10 min-w-[102px] items-center justify-center rounded-lg border border-transparent bg-[rgb(255,79,8)] px-4 text-sm font-semibold text-white transition hover:bg-[rgb(226,66,0)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[rgba(255,79,8,0.4)]"
                     href={offer.link}
                     target="_blank"
                     rel="noreferrer"

@@ -20,6 +20,8 @@ services/scrapers
     stores/
       kontaktHome.ts
       irshad.ts
+      bakuElectronics.ts
+      soliton.ts
       _template.ts
       storeA.ts
       storeB.ts
@@ -29,8 +31,14 @@ services/scrapers
 
 ## Active Store Registry
 
-- Current active stores in `src/config/stores.ts`: `kontakt-home`, `irshad`
+- Current active stores in `src/config/stores.ts`:
+  - `kontakt-home`
+  - `irshad`
+  - `baku-electronics`
+  - `soliton`
 - Demo files `storeA.ts` and `storeB.ts` are kept only as references.
+- Stores outside this list must be added as new scraper modules first.
+- Rollout status file: `STORE_ROLLOUT_STATUS.md`
 
 ## Scheduler Options
 
@@ -55,6 +63,13 @@ services/scrapers
 - `KONTAKT_CHALLENGE_RETRIES=2` : retries when Cloudflare challenge appears
 - `IRSHAD_MAX_PAGES_PER_CATEGORY=3` : max "load more" pages per category
 - `IRSHAD_CATEGORY_URLS=` : optional comma-separated custom category URLs
+- `SOLITON_CATEGORY_URL=` : single category URL for current run
+- `SOLITON_MAX_PAGES_PER_CATEGORY=6` : max ajax pages
+- `BAKU_CATEGORY_SLUG=telefonlar` : `telefonlar` | `plansetler` | `televizorlar`
+- `BAKU_SEARCH_TERMS=` : shared comma-separated search terms
+- `BAKU_PHONE_SEARCH_TERMS=` : optional phone-only term override
+- `BAKU_TABLET_SEARCH_TERMS=` : optional tablet-only term override
+- `BAKU_TV_SEARCH_TERMS=` : optional tv-only term override
 
 ## Kontakt Scraper Notes
 
@@ -78,3 +93,20 @@ services/scrapers
 4. Add store row into Supabase `stores`.
 5. Run smoke test with `SCRAPER_ONLY_STORES=<new-slug>`.
 6. Verify writes in `prices` and `price_logs`.
+
+## 4-Store Category Run Script (Phones/Tablets/TV)
+
+Use the helper script from repo root:
+
+```powershell
+.\scripts\run-market-scrape.ps1 -Mode all -MaxItemsPerStore 80
+```
+
+Options:
+
+- `-Mode phones|tablets|tvs|all`
+- `-Stores "kontakt-home,irshad,soliton,baku-electronics"`
+- `-MaxItemsPerStore 80`
+- `-MaxConcurrency 2`
+- `-DryRun`
+- `-PreflightOnly`

@@ -55,7 +55,7 @@ export default async function SearchPage({ searchParams }: Props) {
         </Link>
       </div>
 
-      <div className="grid">
+      <div className="catalog-grid">
         {data.items.map((item) => (
           <Link key={item.slug} href={`/product/${item.slug}`} className="card">
             {item.image_url ? (
